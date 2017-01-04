@@ -6,14 +6,14 @@ typedef int int_t;
 
 enum ArcType
 {
-	In = 0,
-	Out = 1,
-	Inhibitor = 2
+    In = 0,
+    Out = 1,
+    Inhibitor = 2
 };
 
 enum TransType
 {
-	Imme = 0,
-	Exp = 1
+    Imme = 0,
+    Exp = 1
 };
 
