@@ -28,6 +28,7 @@ bool Transition::is_enabled(PetriNetContext *context) const
 
 std::pair<Marking, double> Transition::fire(PetriNetContext *context) const
 {
+
     auto result = std::make_pair(context->marking->clone(), param.get_val(context));
     Marking &mk = result.first;
     mk.type = Marking::Unknown;
@@ -70,11 +71,19 @@ void PetriNet::add_arc(ArcType type, uint_t trans_index, uint_t place_index, Con
             trans.inhibitor_arc_list.push_back(Arc(place_index, multi));
             break;
     }
+    if (place_index >= init_marking.token_list.size())
+    {
+        init_marking.token_list.resize(place_index + 1, 0);
+    }
 }
 
 void PetriNet::set_init_token(uint_t place_index, uint_t token)
 {
     finalized = false;
+    if (place_index >= init_marking.token_list.size())
+    {
+        init_marking.token_list.resize(place_index + 1, 0);
+    }
     init_marking.token_list[place_index] = token;
 }
 
@@ -157,3 +166,4 @@ void PetriNet::set_marking_type(Marking &marking) const
         marking.type = Marking::Absorbing;
     }
 }
+

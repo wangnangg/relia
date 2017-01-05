@@ -3,7 +3,7 @@
 
 TEST(petri_net, two_place)
 {
-    PetriNet builder(2);
+    PetriNet builder;
     auto t1 = builder.add_transition(Exp, true, 0.1, 1);
     auto t2 = builder.add_transition(Exp, true, 0.2, 1);
     builder.add_arc(In, t1, 0, 1);

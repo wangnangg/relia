@@ -42,7 +42,6 @@ std::vector<uint_t> topology_sort(const AcyclicMarkingChain &chain)
         }
     }
 
-    uint_t current_index = 0;
     for (uint_t i = 0; i < result.size(); i++)
     {
         auto ele = chain[result[i]];

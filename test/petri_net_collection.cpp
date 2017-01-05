@@ -172,39 +172,33 @@ PetriNet acyclic_petri_net()
     return builder;
 }
 
-uint_t numG(void *context_)
+uint_t numG(PetriNetContext *context)
 {
-    auto context = static_cast<PetriNetContext *>(context_);
     return context->marking->token_list[0];
 }
 
-uint_t numB(void *context_)
+uint_t numB(PetriNetContext *context)
 {
-    auto context = static_cast<PetriNetContext *>(context_);
     return context->marking->token_list[1];
 }
 
-uint_t numE(void *context_)
+uint_t numE(PetriNetContext *context)
 {
-    auto context = static_cast<PetriNetContext *>(context_);
     return context->marking->token_list[2];
 }
 
-uint_t numF(void *context_)
+uint_t numF(PetriNetContext *context)
 {
-    auto context = static_cast<PetriNetContext *>(context_);
     return context->marking->token_list[3];
 }
 
-uint_t numD(void *context_)
+uint_t numD(PetriNetContext *context)
 {
-    auto context = static_cast<PetriNetContext *>(context_);
     return context->marking->token_list[4];
 }
 
-uint_t numHalt(void *context_)
+uint_t numHalt(PetriNetContext *context)
 {
-    auto context = static_cast<PetriNetContext *>(context_);
     return context->marking->token_list[5];
 }
 
@@ -213,29 +207,30 @@ static uint_t m = 4;
 
 PetriNet securityCPS_petri_net()
 {
-    PetriNet builder(6);
+    PetriNet builder;
     builder.set_init_token(0, num_nodes);
     builder.set_init_token(4, 1);
-    auto tge = builder.add_transition(Exp, true, static_cast<ConstOrVar<double>::CallBack>([](void *context)
+    auto tge = builder.add_transition(Exp, true, static_cast<ConstOrVar<double>::CallBack>([](PetriNetContext *context)
     {
         return 0.5 * numG(context);
     }), 0);
-    auto tgb = builder.add_transition(Exp, true, static_cast<ConstOrVar<double>>([](void *context)
+    auto tgb = builder.add_transition(Exp, true, static_cast<ConstOrVar<double>::CallBack>([](PetriNetContext *context)
     {
         return 1.0 * numG(context);
     }), 0);
-    auto tbe = builder.add_transition(Exp, true, static_cast<ConstOrVar<double>>([](void *context)
+    auto tbe = builder.add_transition(Exp, true,
+                                      static_cast<ConstOrVar<double>::CallBack>([](PetriNetContext *context) -> double
     {
         return 5.0 * numB(context);
     }), 0);
-    auto tbf = builder.add_transition(Exp, true, static_cast<ConstOrVar<double>>([](void *context)
+    auto tbf = builder.add_transition(Exp, true, static_cast<ConstOrVar<double>::CallBack>([](PetriNetContext *context)
     {
         return 0.0208333333333 * numB(context);
     }), 0);
     auto td = builder.add_transition(Exp, true, 0.0057142095238, 0);
-    auto tflush = builder.add_transition(Imme, static_cast<ConstOrVar<bool>>([](void *context_)
+    auto tflush = builder.add_transition(Imme,
+                                         static_cast<ConstOrVar<bool>::CallBack>([](PetriNetContext *context) -> bool
     {
-        auto context = static_cast<PetriNetContext *>(context_);
         if (((numG(context) + numB(context) < m) || (numF(context) >= 1) || (numD(context) == 0) ||
              (numG(context) <= 2 * numB(context))) && (numHalt(context) == 0))
         {

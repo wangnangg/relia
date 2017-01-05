@@ -41,6 +41,8 @@ public:
     { return check_interval; }
 };
 
+
+/*solve Px=x*/
 template<typename M>
 void power_method(const M &P, Vector &x, IterStopCondition &stop_condition)
 {

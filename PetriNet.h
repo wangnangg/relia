@@ -3,6 +3,7 @@
 #include <vector>
 #include <utility>
 #include <string>
+#include <functional>
 #include "Type.h"
 
 
@@ -23,15 +24,16 @@ template<typename T>
 class ConstOrVar
 {
 public:
-    typedef T(*CallBack)(void *context);
+    typedef std::function<T(PetriNetContext *)> CallBack;
 
+    typedef T (CallBackFuncPtr)(PetriNetContext *);
 private:
     enum Type
     {
-        Const,
-        Var
+        Const = 0,
+        Var = 1
     } type;
-    union
+    struct
     {
         T val;
         CallBack func;
@@ -39,7 +41,6 @@ private:
 
 public:
     ConstOrVar() = default;
-
     ConstOrVar(T val) : type(Const)
     {
         store.val = val;
@@ -48,6 +49,11 @@ public:
     ConstOrVar(CallBack call_back) : type(Var)
     {
         store.func = call_back;
+    }
+
+    ConstOrVar(CallBackFuncPtr call_back_func_ptr) : type(Var)
+    {
+        store.func = call_back_func_ptr;
     }
 
     T get_val(PetriNetContext *context) const
@@ -60,6 +66,9 @@ public:
                 return store.func(context);
         }
     }
+
+    Type get_type() const
+    { return type; }
 
     ConstOrVar &operator=(T val)
     {
@@ -160,11 +169,13 @@ class PetriNet
 {
     bool finalized = false;
 public:
+    typedef std::function<double(PetriNetContext *)> RewardFuncType;
     Marking init_marking;
     std::vector<Transition> trans_list;
     uint_t imme_trans_count;
 public:
-    PetriNet() = default;
+    PetriNet() : init_marking(0), trans_list(0), imme_trans_count(0)
+    {}
 
     explicit PetriNet(uint_t place_count) : init_marking(place_count), trans_list(0), imme_trans_count(0)
     {}
@@ -172,6 +183,8 @@ public:
     PetriNet(PetriNet &&) = default;
 
     PetriNet(const PetriNet &) = delete;
+
+    PetriNet &operator=(PetriNet &&) = default;
 
     //builder method:
     uint_t add_transition(TransType type, ConstOrVar<bool> guard, ConstOrVar<double> param, uint_t priority);
@@ -182,7 +195,7 @@ public:
 
     void finalize();
 
-    //lookup method:
+    //marking related method:
     std::vector<std::pair<Marking, double>> next_markings(const Marking &marking) const;
 
     const Marking &get_init_marking() const
@@ -190,9 +203,32 @@ public:
         return init_marking;
     }
 
-    PetriNet &operator=(PetriNet &&) = default;
+    //query method
+
+    bool is_transition_enabled(uint_t trans_index, PetriNetContext *context) const
+    {
+        return trans_list[trans_index].is_enabled(context);
+    }
+
+    uint_t get_token_num(uint_t place_index, PetriNetContext *context) const
+    {
+        return context->marking->token_list[place_index];
+    }
+
+    bool has_enabled_trans(PetriNetContext *context) const
+    {
+        if (context->marking->type == Marking::Absorbing)
+        {
+            return false;
+        } else
+        {
+            return true;
+        }
+    }
+
 
 private:
     void set_marking_type(Marking &marking) const;
 };
+
 

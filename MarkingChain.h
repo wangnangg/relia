@@ -397,4 +397,10 @@ std::pair<MarkingChain<ElementType>, MarkingChainInitState> generate_marking_cha
 ChainMatrixMapper index_tangible_chain(const MarkingChain<BasicChainElement> &chain);
 
 
-ColSparseM markingchain_to_Qmatrix(const MarkingChain<BasicChainElement> &chain);
+std::tuple<ColSparseM, Vector, ChainMatrixMapper> markingchain_to_Qmatrix(
+        const MarkingChain<BasicChainElement> &chain,
+        const MarkingChainInitState &chain_init);
+
+std::tuple<ColSparseM, Vector, ChainMatrixMapper> markingchain_to_Pmatrix(
+        const MarkingChain<BasicChainElement> &chain,
+        const MarkingChainInitState &chain_init);
