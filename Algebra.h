@@ -10,6 +10,12 @@ class IterStopCondition
     uint_t used_iteration_count = 0;
     uint_t check_interval = 10;
 public:
+    IterStopCondition()
+    {
+        max_iteration = 1000;
+        precision = 1e-6;
+    }
+
     IterStopCondition(uint_t max_iter, double precision) : max_iteration(max_iter), precision(precision)
     {}
 

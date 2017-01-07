@@ -27,6 +27,7 @@ public:
     typedef std::function<T(PetriNetContext *)> CallBack;
 
     typedef T (CallBackFuncPtr)(PetriNetContext *);
+
 private:
     enum Type
     {
@@ -41,6 +42,7 @@ private:
 
 public:
     ConstOrVar() = default;
+
     ConstOrVar(T val) : type(Const)
     {
         store.val = val;

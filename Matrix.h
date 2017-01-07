@@ -8,15 +8,21 @@ class Vector
 private:
     std::vector<double> data;
 
-    Vector(const Vector &) = default;
 
 public:
     Vector(uint_t size) : data(size)
     {}
 
+    Vector() : data(0)
+    {}
+
     Vector(Vector &&) = default;
 
-    Vector &operator=(Vector &&v) = default;
+    Vector(const Vector &) = delete;
+
+    Vector &operator=(Vector &&) = default;
+
+    Vector &operator=(const Vector &) = delete;
 
     Vector(std::vector<double> &&data) : data(std::move(data))
     {}

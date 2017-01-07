@@ -173,8 +173,19 @@ class ChainMatrixMapper
     std::vector<uint_t> chain_to_mat;
     std::vector<uint_t> mat_to_chain;
 public:
+    ChainMatrixMapper() : chain_to_mat(0), mat_to_chain(0)
+    {}
+
+    ChainMatrixMapper(const ChainMatrixMapper &) = delete;
+
     ChainMatrixMapper(uint_t size) : chain_to_mat(size), mat_to_chain(size)
     {}
+
+    ChainMatrixMapper(ChainMatrixMapper &&) = default;
+
+    ChainMatrixMapper &operator=(ChainMatrixMapper &&) = default;
+
+    ChainMatrixMapper &operator=(const ChainMatrixMapper &) = delete;
 
     void set_map(uint_t chain_ind, uint_t matrix_ind)
     {
@@ -259,10 +270,9 @@ MarkingChain<ElementType> recursive_explore_vanishing_marking(const PetriNet &pe
 }
 
 
-extern IterStopCondition van_chain_solve_stop_condition;
-
 template<typename ElementType>
-std::vector<ChainArc> collapse_vanishing_chain(const MarkingChain<ElementType> &van_container_chain)
+std::vector<ChainArc> collapse_vanishing_chain(const MarkingChain<ElementType> &van_container_chain,
+                                               IterStopCondition &van_chain_solve_stop_condition)
 {
     PointerIndexMapper<ElementType> mapper = index_vanishing_chain(van_container_chain);
     uint_t dim = mapper.size();
@@ -334,7 +344,8 @@ template<typename ElementType>
 void explore_tangible_marking(const PetriNet &petri_net,
                               const std::vector<const MarkingChain<ElementType> *> &chain_list,
                               MarkingChain<ElementType> &tan_container_chain,
-                              ElementType *tan_ele)
+                              ElementType *tan_ele,
+                              const IterStopCondition van_chain_stop_condition)
 {
     auto next_mk_list = petri_net.next_markings(tan_ele->get_marking());
     for (auto &mk_pair : next_mk_list)
@@ -345,7 +356,8 @@ void explore_tangible_marking(const PetriNet &petri_net,
         {
             auto van_chain = recursive_explore_vanishing_marking(petri_net, chain_list, tan_container_chain,
                                                                  std::move(mk));
-            auto arc_list = collapse_vanishing_chain(van_chain);
+            IterStopCondition stop_cond = van_chain_stop_condition;
+            auto arc_list = collapse_vanishing_chain(van_chain, stop_cond);
             for (auto arc : arc_list)
             {
                 arc.val = arc.val * val;
@@ -366,7 +378,8 @@ void explore_tangible_marking(const PetriNet &petri_net,
 }
 
 template<typename ElementType>
-std::pair<MarkingChain<ElementType>, MarkingChainInitState> generate_marking_chain(const PetriNet &petri_net)
+std::pair<MarkingChain<ElementType>, MarkingChainInitState> generate_marking_chain(const PetriNet &petri_net,
+                                                                                   const IterStopCondition van_chain_stop_condition)
 {
     MarkingChain<ElementType> tan_container_chain;
     MarkingChainInitState init_state;
@@ -375,7 +388,8 @@ std::pair<MarkingChain<ElementType>, MarkingChainInitState> generate_marking_cha
     {
         auto van_chain = recursive_explore_vanishing_marking(petri_net, chain_list, tan_container_chain,
                                                              petri_net.get_init_marking().clone());
-        auto arc_list = collapse_vanishing_chain(van_chain);
+        IterStopCondition stop_cond = van_chain_stop_condition;
+        auto arc_list = collapse_vanishing_chain(van_chain, stop_cond);
         for (auto arc : arc_list)
         {
             init_state.push_back({arc.dest_ele, arc.val});
@@ -387,7 +401,8 @@ std::pair<MarkingChain<ElementType>, MarkingChainInitState> generate_marking_cha
     }
     for (uint_t current_index = 0; current_index < tan_container_chain.size(); current_index++)
     {
-        explore_tangible_marking(petri_net, chain_list, tan_container_chain, tan_container_chain[current_index]);
+        explore_tangible_marking(petri_net, chain_list, tan_container_chain, tan_container_chain[current_index],
+                                 van_chain_stop_condition);
     }
     return std::make_pair<MarkingChain<ElementType>, MarkingChainInitState>(std::move(tan_container_chain),
                                                                             std::move(init_state));

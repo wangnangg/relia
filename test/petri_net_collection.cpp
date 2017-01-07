@@ -220,9 +220,9 @@ PetriNet securityCPS_petri_net()
     }), 0);
     auto tbe = builder.add_transition(Exp, true,
                                       static_cast<ConstOrVar<double>::CallBack>([](PetriNetContext *context) -> double
-    {
-        return 5.0 * numB(context);
-    }), 0);
+                                      {
+                                          return 5.0 * numB(context);
+                                      }), 0);
     auto tbf = builder.add_transition(Exp, true, static_cast<ConstOrVar<double>::CallBack>([](PetriNetContext *context)
     {
         return 0.0208333333333 * numB(context);
@@ -230,16 +230,17 @@ PetriNet securityCPS_petri_net()
     auto td = builder.add_transition(Exp, true, 0.0057142095238, 0);
     auto tflush = builder.add_transition(Imme,
                                          static_cast<ConstOrVar<bool>::CallBack>([](PetriNetContext *context) -> bool
-    {
-        if (((numG(context) + numB(context) < m) || (numF(context) >= 1) || (numD(context) == 0) ||
-             (numG(context) <= 2 * numB(context))) && (numHalt(context) == 0))
-        {
-            return true;
-        } else
-        {
-            return false;
-        }
-    }), 1.0, 0);
+                                         {
+                                             if (((numG(context) + numB(context) < m) || (numF(context) >= 1) ||
+                                                  (numD(context) == 0) ||
+                                                  (numG(context) <= 2 * numB(context))) && (numHalt(context) == 0))
+                                             {
+                                                 return true;
+                                             } else
+                                             {
+                                                 return false;
+                                             }
+                                         }), 1.0, 0);
 
     builder.add_arc(In, tgb, 0, 1);
     builder.add_arc(In, tge, 0, 1);

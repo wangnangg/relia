@@ -1,8 +1,6 @@
 #include "MarkingChain.h"
 
 
-IterStopCondition van_chain_solve_stop_condition(1000, 1e-9);
-
 ChainMatrixMapper index_tangible_chain(const MarkingChain<BasicChainElement> &chain)
 {
     ChainMatrixMapper mapper(chain.size());

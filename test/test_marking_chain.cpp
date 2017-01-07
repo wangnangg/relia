@@ -2,14 +2,16 @@
 #include "petri_net_collection.h"
 #include "helper.h"
 
+IterStopCondition stop_cond;
+
 TEST(MarkingChain, generate)
 {
-    display(generate_marking_chain<BasicChainElement>(trivial_petri_net()));
-    display(generate_marking_chain<BasicChainElement>(molloys_petri_net()));
-    display(generate_marking_chain<BasicChainElement>(acyclic_imme_petri_net()));
-    display(generate_marking_chain<BasicChainElement>(acyclic_imme_petri_net2()));
-    display(generate_marking_chain<BasicChainElement>(cyclic_imme_petri_net()));
-    display(generate_marking_chain<BasicChainElement>(cyclic_imme_petri_net2()));
+    display(generate_marking_chain<BasicChainElement>(trivial_petri_net(), stop_cond));
+    display(generate_marking_chain<BasicChainElement>(molloys_petri_net(), stop_cond));
+    display(generate_marking_chain<BasicChainElement>(acyclic_imme_petri_net(), stop_cond));
+    display(generate_marking_chain<BasicChainElement>(acyclic_imme_petri_net2(), stop_cond));
+    display(generate_marking_chain<BasicChainElement>(cyclic_imme_petri_net(), stop_cond));
+    display(generate_marking_chain<BasicChainElement>(cyclic_imme_petri_net2(), stop_cond));
 }
 
 typedef PetriNet(*petri_net_func)();
@@ -21,7 +23,7 @@ TEST(MarkingChain, solve)
     for (auto f : petri_nets)
     {
         std::cout << "start of solve:" << std::endl;
-        auto chain_pair = generate_marking_chain<BasicChainElement>(f());
+        auto chain_pair = generate_marking_chain<BasicChainElement>(f(), stop_cond);
         auto result = markingchain_to_Qmatrix(chain_pair.first, chain_pair.second);
         auto Qmat_row = to_row_sparse(std::get<0>(result));
         Vector x(Qmat_row.dim());
