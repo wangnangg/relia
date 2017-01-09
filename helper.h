@@ -3,7 +3,7 @@
 #include "Matrix.h"
 #include <iostream>
 #include <iomanip>
-
+#include <sstream>
 
 template<typename M>
 M create_matrix(uint_t dim, std::vector<double> val)

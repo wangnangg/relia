@@ -27,5 +27,5 @@ void sor_method(Vector &x, const RowSparseM &Q, IterStopCondition &stop_conditio
         }
         sub(res, x, x_next);
     } while (!stop_condition.should_stop(iter_count, res));
-    LOG2("result :" << display(x))
+    LOG2("sor result :" << display(x))
 }

@@ -79,7 +79,7 @@ std::vector<ElementProb> solve_tangible_subchain(const Subchain &subchain,
     }
     power_method(Pmat, sol, stop_condition);
     double sol_sum = 0;
-    for(uint_t i=subchain.foreign_element_count(); i<Pmat.dim(); i++)
+    for(uint_t i=subchain.home_element_count(); i<Pmat.dim(); i++)
     {
         sol(i) = std::abs(sol(i));
         sol_sum += sol(i);
@@ -87,7 +87,7 @@ std::vector<ElementProb> solve_tangible_subchain(const Subchain &subchain,
     double factor = prob_sum / sol_sum;
     std::vector<ElementProb> result;
     result.reserve(subchain.foreign_element_count());
-    for(uint_t i=subchain.foreign_element_count(); i<Pmat.dim(); i++)
+    for(uint_t i=subchain.home_element_count(); i<Pmat.dim(); i++)
     {
         result.emplace_back(subchain[i], sol(i) * factor);
     }
@@ -111,7 +111,7 @@ Vector solve_absorbing_subchain(const Subchain &subchain,
     {
         sol(i) = std::abs(sol(i)) * factor;
     }
-    LOG2("result:"<<display(sol));
+    LOG2("normed result(" << prob_sum <<"):" << display(sol));
     return sol;
 }
 
@@ -144,17 +144,24 @@ Vector solve_marking_chain(const MarkingChain<ChainElement> &chain,
     subchain_init_prob_vec.reserve(subchain_list.size());
     for (uint_t i = 0; i < subchain_list.size(); i++)
     {
-        subchain_init_prob_vec.emplace_back(subchain_list.size());
+        subchain_init_prob_vec.emplace_back(subchain_list[i].home_element_count());
     }
     feed_init_prob(subchain_init_prob_vec, chain_init_vec);
-    for (uint_t i = 0; i < subchain_list.size(); i++)
+	//eval topology sort order
+    for (int_t i = subchain_list.size() - 1; i >= 0 ; i--)
     {
         Vector &init_vec = subchain_init_prob_vec[i];
+		if(norm1(init_vec) == 0.0) //unreachable subchain
+		{
+			continue;
+		}
         const Subchain &subchain = subchain_list[i];
         if (subchain.is_absorbing())
         {
             IterStopCondition stop_condition_inst = stop_condition;
-            Vector sub_sol = solve_absorbing_subchain(subchain, norm1(init_vec), stop_condition_inst);
+			Vector sub_sol = subchain.home_element_count() == 1 ?
+				std::move(init_vec):
+				solve_absorbing_subchain(subchain, norm1(init_vec), stop_condition_inst);
             for (uint_t local_ind = 0; local_ind < subchain.home_element_count(); local_ind++)
             {
                 uint_t global_index = subchain[local_ind]->get_index();

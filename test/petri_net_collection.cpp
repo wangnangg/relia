@@ -172,6 +172,33 @@ PetriNet acyclic_petri_net()
     return builder;
 }
 
+PetriNet mixed_class_petri_net()
+{
+	PetriNet petri_net(4);
+	add_trans(petri_net, Exp, 1.0, { 0 }, { 1 });
+	add_trans(petri_net, Exp, 2.0, { 1 }, { 0 });
+	add_trans(petri_net, Exp, 0.1, { 0 }, { 2 });
+	add_trans(petri_net, Exp, 0.1, { 1 }, { 3 });
+	petri_net.set_init_token(0, 1);
+	petri_net.finalize();
+	return petri_net;
+}
+
+PetriNet mixed_class_petri_net2()
+{
+	PetriNet petri_net(5);
+	add_trans(petri_net, Exp, 1.0, { 0 }, { 1 });
+	add_trans(petri_net, Exp, 2.0, { 0 }, { 3 });
+	add_trans(petri_net, Exp, 0.1, { 1 }, { 2 });
+	add_trans(petri_net, Exp, 0.2, { 2 }, { 1 });
+	add_trans(petri_net, Exp, 0.1, { 3 }, { 4 });
+	add_trans(petri_net, Exp, 0.2, { 4 }, { 3 });
+	petri_net.set_init_token(0, 1);
+	petri_net.finalize();
+	return petri_net;
+
+}
+
 uint_t numG(PetriNetContext *context)
 {
     return context->marking->token_list[0];

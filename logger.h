@@ -9,6 +9,10 @@
 #include <fstream>
 extern std::ofstream __log_file;
 
+#ifdef _DEBUG
+#define LOG_LEVEL_2
+#define USE_STDOUT
+#endif
 
 #ifdef LOG_LEVEL_1
 #ifdef USE_STDOUT

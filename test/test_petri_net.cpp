@@ -1,5 +1,5 @@
 #include<gtest/gtest.h>
-#include"PetriNet.h"
+#include "PetriNet.h"
 
 TEST(petri_net, two_place)
 {

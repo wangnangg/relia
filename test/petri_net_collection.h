@@ -31,4 +31,5 @@ PetriNet acyclic_petri_net();
 PetriNet securityCPS_petri_net();
 
 
-
+PetriNet mixed_class_petri_net();
+PetriNet mixed_class_petri_net2();

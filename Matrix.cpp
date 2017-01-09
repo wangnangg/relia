@@ -30,7 +30,6 @@ void SparseMatrix::assemble(uint_t i)
 
 RowSparseM to_row_sparse(const ColSparseM &col_matrix)
 {
-    LOG2(__FUNCTION__ << ":\n" << display(col_matrix));
     uint_t dim = col_matrix.dim();
     std::vector<uint_t> counter(dim, 0);
     for (uint_t i = 0; i < dim; i++)
@@ -56,7 +55,6 @@ RowSparseM to_row_sparse(const ColSparseM &col_matrix)
     {
         result.assemble(i);
     }
-    LOG2("resulting row sparse:\n" << display(result));
     return result;
 }
 

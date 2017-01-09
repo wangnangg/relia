@@ -4,7 +4,7 @@
 #include "Type.h"
 #include "MarkingChain.h"
 #include "MarkingChainSplit.h"
-
+#include <algorithm>
 struct SCCVertex
 {
     uint_t index;

@@ -21,7 +21,10 @@ petri_net_func petri_nets[] = {trivial_petri_net, molloys_petri_net, acyclic_imm
                                acyclic_imme_petri_net2,
                                cyclic_imme_petri_net,
                                cyclic_imme_petri_net2,
-                                acyclic_petri_net};
+                                acyclic_petri_net,
+							   mixed_class_petri_net,
+	mixed_class_petri_net2
+};
 
 TEST(MarkingChain, solve)
 {
@@ -33,8 +36,7 @@ TEST(MarkingChain, solve)
         auto& chain_init = chain_pair.second;
         IterStopCondition stop_condition(1000, 1e-6);
         Vector sol = solve_marking_chain(chain, chain_init, stop_condition);
-        display(sol);
-        std::cout << "used iter:" << stop_condition.get_used_iter() << std::endl << " " << std::endl;
+		std::cout << "solution:" << display(sol) << std::endl;
     }
 }
 
