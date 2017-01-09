@@ -14,19 +14,7 @@ TEST(MarkingChain, generate)
     display(generate_marking_chain<BasicChainElement>(cyclic_imme_petri_net(), stop_cond));
     display(generate_marking_chain<BasicChainElement>(cyclic_imme_petri_net2(), stop_cond));
 }
-
-typedef PetriNet(*petri_net_func)();
-
-petri_net_func petri_nets[] = {trivial_petri_net, molloys_petri_net, acyclic_imme_petri_net,
-                               acyclic_imme_petri_net2,
-                               cyclic_imme_petri_net,
-                               cyclic_imme_petri_net2,
-                                acyclic_petri_net,
-							   mixed_class_petri_net,
-	mixed_class_petri_net2
-};
-
-TEST(MarkingChain, solve)
+TEST(MarkingChain, ss_solve)
 {
     for (auto f : petri_nets)
     {
@@ -35,8 +23,10 @@ TEST(MarkingChain, solve)
         auto& chain = chain_pair.first;
         auto& chain_init = chain_pair.second;
         IterStopCondition stop_condition(1000, 1e-6);
-        Vector sol = solve_marking_chain(chain, chain_init, stop_condition);
-		std::cout << "solution:" << display(sol) << std::endl;
+		std::cout << "solving marking chain:\n" << display(markingchain_to_Qmatrix(chain)) << std::endl;
+        auto sol = ss_divide_solve_marking_chain(chain, chain_init, stop_condition);
+		std::cout << "solution prob:" << display(sol.prob) << std::endl;
+		std::cout << "solution stay_time:" << display(sol.stay_time) << std::endl;
     }
 }
 

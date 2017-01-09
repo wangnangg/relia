@@ -184,9 +184,14 @@ void split_lud(RowSparseM &L, RowSparseM &U, RowSparseM &D, const RowSparseM &A)
 void backsolve(Vector &x, const RowSparseM &L, double alpha, const Vector &b);
 
 /*
- * solve Lx=alpha*B*b
+ * solve Lx=B*b
  */
-void backsolve(Vector &x, const RowSparseM &L, double alpha, const RowSparseM &B, const Vector &b);
+void backsolve(Vector &x, const RowSparseM &L, const RowSparseM &B, const Vector &b);
+
+/*
+ * solve Lx=B*b + c
+ */
+void backsolve(Vector &x, const RowSparseM &L, const RowSparseM &B, const Vector &b, const Vector& c);
 
 
 

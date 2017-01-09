@@ -86,7 +86,8 @@ TEST(Matrix, backsolve2)
     });
     display(mr);
     Vector b({4, 3, 2, 1});
-    backsolve(x, m, 1.5, mr, b);
+	b.scale(1.5);
+    backsolve(x, m, mr, b);
     display(x);
     Vector ans({30, 30, -12, -9.3333333});
     ASSERT_TRUE(equal(ans, x));

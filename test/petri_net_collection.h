@@ -33,3 +33,8 @@ PetriNet securityCPS_petri_net();
 
 PetriNet mixed_class_petri_net();
 PetriNet mixed_class_petri_net2();
+
+typedef PetriNet(*petri_net_func)();
+
+
+extern std::vector<petri_net_func> petri_nets;

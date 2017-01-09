@@ -9,7 +9,7 @@
 
 class PetriNet;
 
-struct Marking;
+class Marking;
 
 class Transition;
 
@@ -90,8 +90,9 @@ public:
 };
 
 
-struct Marking
+class Marking
 {
+public:
     enum Type
     {
         Unknown,
@@ -100,14 +101,15 @@ struct Marking
         Absorbing
     };
 
-
+private:
     Marking(const Marking &marking) = default;
+public:
 
     std::vector<uint_t> token_list;
     uint_t f_enabled_trans_ind;
     Type type;
-public:
-    Marking() = default;
+
+    Marking() = delete;
 
     Marking(uint_t token_count) : token_list(token_count), f_enabled_trans_ind(0), type(Unknown)
     {}
@@ -115,13 +117,14 @@ public:
     Marking(Marking &&marking) = default;
 
     Marking &operator=(Marking &&) = default;
+	Marking& operator=(const Marking&) = delete;
 
     bool operator==(const Marking &other) const
     { return other.token_list == token_list; };
 
     Marking clone() const
     {
-        return Marking(*this);
+		return Marking(*this);
     }
 };
 

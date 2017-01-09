@@ -12,7 +12,8 @@ struct Option
     {
         SS_Auto = 0,
         SS_SOR = 1,
-        SS_Power = 2
+        SS_Power = 2,
+		SS_Divide = 3
     } steady_state_method;
     enum TSMethod
     {
@@ -26,21 +27,23 @@ struct Option
 };
 struct MarkingVal
 {
-    const Marking* marking;
+    Marking marking;
     double prob;
     double stay_time;
-    MarkingVal(const Marking* marking, double prob, double stay_time):marking(marking),prob(prob), stay_time(stay_time)
+    MarkingVal(Marking marking, double prob, double stay_time):marking(std::move(marking)),prob(prob), stay_time(stay_time)
     {}
 };
 std::vector<MarkingVal> solve_ss_power(const PetriNet& petri_net,
-                                                    IterStopCondition &stop_condition);;
+                                                    const IterStopCondition &stop_condition);;
 
 std::vector<MarkingVal> solve_ss_sor(const PetriNet& petri_net,
-                                                  IterStopCondition &stop_condition,
+                                                  const IterStopCondition &stop_condition,
                                                   double omega);;
 
 std::vector<MarkingVal> solve_ss_auto(const PetriNet& petri_net,
-                                                   IterStopCondition &stop_condition);
+                                                   const IterStopCondition &stop_condition);
+
+std::vector<MarkingVal> solve_ss_divide(const PetriNet &petri_net, const IterStopCondition &stop_condition);
 
 
 class PetriNetSolution
@@ -58,7 +61,7 @@ public:
     PetriNet petri_net;
     void *tag;
 
-    PetriNetSolution() : option(_option)
+    PetriNetSolution() : option(_option), tag(nullptr)
     {
         LOG1(__FUNCTION__);
         _option.steady_state_method = Option::SS_Auto;
@@ -110,12 +113,14 @@ public:
     {
         LOG1(__FUNCTION__);
         inst_reward_func.push_back(reward_func);
+		inst_reward.push_back(0.0);
         return inst_reward_func.size() - 1;
     }
 
     uint_t add_cum_reward_func(RewardFuncType reward_func)
     {
         cum_reward_func.push_back(reward_func);
+		cum_reward.push_back(0.0);
         return cum_reward_func.size() - 1;
     }
 
@@ -131,48 +136,16 @@ public:
         return cum_reward[reward_index];
     }
 
-    void solve_steady_state()
-    {
-        LOG1(__FUNCTION__);
-        petri_net.finalize();
-        IterStopCondition stop_condition(option.max_interation, option.precision);
-        std::vector<MarkingVal> result;
-        switch (option.steady_state_method)
-        {
-            case Option::SS_Power:
-                result = solve_ss_power(petri_net, stop_condition);
-            case Option::SS_SOR:
-                result = solve_ss_sor(petri_net, stop_condition, option.sor_omega);
-            default:
-                result = solve_ss_auto(petri_net, stop_condition);
-                break;
-        }
-        inst_reward.clear();
-        for (uint_t i = 0; i < inst_reward_func.size(); i++)
-        {
-            inst_reward.push_back(eval_reward(result, inst_reward_func[i]));
-        }
-
-    }
+	void solve_steady_state();
 
 private:
+	void update_reward(const std::vector<MarkingVal>& result);
 
-    double eval_reward(const std::vector<MarkingVal>& result,
-                       RewardFuncType func)
-    {
-        double reward = 0.0;
-        for(const MarkingVal& m_val : result)
-        {
-            if(m_val.prob != 0)
-            {
-                PetriNetContext context{&petri_net, m_val.marking};
-                double reward_rate = func(&context);
-                reward += reward_rate * m_val.prob;
-            }
-        }
-        return reward;
-    }
-
+	void clear_reward()
+	{
+		std::fill(inst_reward.begin(), inst_reward.end(), 0.0);
+		std::fill(cum_reward.begin(), cum_reward.end(), 0.0);
+	}
 };
 
 #endif //RELIA_PETRINETSOLUTION_H
