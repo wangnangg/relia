@@ -3,7 +3,7 @@
 #include "MarkingChain.h"
 #include <iostream>
 
-void display(std::pair<MarkingChain<BasicChainElement>, MarkingChainInitState> pair);
+void display(std::pair<MarkingChain<BasicChainElement>, MarkingChainSparseState> pair);
 
 PetriNet trivial_petri_net();
 

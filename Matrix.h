@@ -10,9 +10,8 @@ private:
 
 
 public:
-    Vector(uint_t size) : data(size)
+    Vector(uint_t size, double val=0.0) : data(size, val)
     {}
-
     Vector() : data(0)
     {}
 
@@ -34,6 +33,7 @@ public:
             e = e * val;
         }
     }
+
 
     uint_t dim() const
     {

@@ -14,14 +14,13 @@ TEST(Solution, reward_func)
                                                          {
                                                              return 1.0;
                                                          }));
-    auto stop = solution.solve_steady_state();
-    ASSERT_TRUE(stop.is_precision_reached());
+    solution.solve_steady_state();
     double val = solution.get_inst_reward(index);
     ASSERT_DOUBLE_EQ(val, 1.0);
 
-    stop = solution.solve_steady_state();
-    ASSERT_TRUE(stop.is_precision_reached());
+    solution.solve_steady_state();
     val = solution.get_inst_reward(index);
     ASSERT_DOUBLE_EQ(val, 1.0);
 
 }
+

@@ -1,6 +1,6 @@
 #include "petri_net_collection.h"
 
-void display(std::pair<MarkingChain<BasicChainElement>, MarkingChainInitState> pair)
+void display(std::pair<MarkingChain<BasicChainElement>, MarkingChainSparseState> pair)
 {
     const auto &init_state = pair.second;
     std::cout << "init:";

@@ -7,6 +7,7 @@
 #include <memory>
 #include "Matrix.h"
 #include "Algebra.h"
+#include <cmath>
 
 struct ChainArc
 {
@@ -28,8 +29,12 @@ public:
 
     void add_arc(ChainArc arc)
     {
-        to_arc_list.push_back(arc);
-        out_sum += arc.val;
+        //self arc is not allowed
+        if (arc.dest_ele != this)
+        {
+            to_arc_list.push_back(arc);
+            out_sum += arc.val;
+        }
     }
 
     double get_out_sum() const
@@ -56,6 +61,35 @@ public:
     { return index; }
 };
 
+class ChainElement : public BasicChainElement
+{
+    int_t subindex;
+    int_t subchain_index;
+public:
+    ChainElement(Marking &&marking, uint_t index) : BasicChainElement(std::move(marking), index),
+                                                    subindex(-1),
+                                                    subchain_index(-1)
+    {}
+
+    void set_subindex(int_t ind)
+    {
+        subindex = ind;
+    }
+
+    void set_subchain_index(int_t ind)
+    {
+        subchain_index = ind;
+    }
+
+
+    uint_t get_subindex() const
+    { return subindex; }
+
+    uint_t get_subchain_index() const
+    { return subchain_index; }
+
+};
+
 
 template<typename ElementType>
 class MarkingChain
@@ -80,6 +114,7 @@ public:
         return element_list.size();
     }
 
+    //TODO: faster search
     ElementType *search(const Marking &marking) const
     {
         for (const auto &ele_ptr : element_list)
@@ -109,14 +144,60 @@ public:
     }
 };
 
+class Subchain
+{
+    uint_t myindex;
+    std::vector<ChainElement *> element_list;
+    std::vector<ChainElement *> foreign_element_list;
+    std::map<ChainElement *, uint_t> foreign_map;
+public:
+    Subchain(uint_t index, const MarkingChain<ChainElement> &chain, const std::vector<uint_t>& ele_ind_list);
 
-struct ElementInitProb
+    bool is_absorbing() const
+    {
+        return foreign_element_list.size() == 0;
+    }
+
+    bool owns(ChainElement *ele) const
+    {
+        return ele->get_subchain_index() == myindex;
+    }
+
+    uint_t home_element_count() const
+    {
+        return element_list.size();
+    }
+
+    uint_t foreign_element_count() const
+    {
+        return foreign_element_list.size();
+    }
+
+    ChainElement *operator[](uint_t ind) const
+    {
+        if(ind < element_list.size())
+        {
+            return element_list[ind];
+        }
+        return foreign_element_list[ind - element_list.size()];
+    }
+
+    uint_t find_foreign_element_index(ChainElement *ele) const
+    {
+        return foreign_map.at(ele) + element_list.size();
+    }
+};
+
+struct ElementProb
 {
     void *ele;
     double prob;
+
+    ElementProb(void *ele, double prob) : ele(ele), prob(prob)
+    {}
 };
 
-typedef std::vector<ElementInitProb> MarkingChainInitState;
+typedef std::vector<ElementProb> MarkingChainSparseState;
 
 
 template<typename T>
@@ -168,44 +249,44 @@ public:
 };
 
 
-class ChainMatrixMapper
+class ChainIndexMapper
 {
-    std::vector<uint_t> chain_to_mat;
-    std::vector<uint_t> mat_to_chain;
+    std::vector<uint_t> chain_to_index;
+    std::vector<uint_t> index_to_chain;
 public:
-    ChainMatrixMapper() : chain_to_mat(0), mat_to_chain(0)
+    ChainIndexMapper() : chain_to_index(0), index_to_chain(0)
     {}
 
-    ChainMatrixMapper(const ChainMatrixMapper &) = delete;
+    ChainIndexMapper(const ChainIndexMapper &) = delete;
 
-    ChainMatrixMapper(uint_t size) : chain_to_mat(size), mat_to_chain(size)
+    ChainIndexMapper(uint_t size) : chain_to_index(size), index_to_chain(size)
     {}
 
-    ChainMatrixMapper(ChainMatrixMapper &&) = default;
+    ChainIndexMapper(ChainIndexMapper &&) = default;
 
-    ChainMatrixMapper &operator=(ChainMatrixMapper &&) = default;
+    ChainIndexMapper &operator=(ChainIndexMapper &&) = default;
 
-    ChainMatrixMapper &operator=(const ChainMatrixMapper &) = delete;
+    ChainIndexMapper &operator=(const ChainIndexMapper &) = delete;
 
-    void set_map(uint_t chain_ind, uint_t matrix_ind)
+    void set_map(uint_t chain_ind, uint_t other_ind)
     {
-        chain_to_mat[chain_ind] = matrix_ind;
-        mat_to_chain[matrix_ind] = chain_ind;
+        chain_to_index[chain_ind] = other_ind;
+        index_to_chain[other_ind] = chain_ind;
     }
 
-    uint_t chain2mat(uint_t chain_ind) const
+    uint_t from_chain(uint_t chain_ind) const
     {
-        return chain_to_mat[chain_ind];
+        return chain_to_index[chain_ind];
     }
 
-    uint_t mat2chain(uint_t mat_ind) const
+    uint_t to_chain(uint_t other_ind) const
     {
-        return mat_to_chain[mat_ind];
+        return index_to_chain[other_ind];
     }
 
     uint_t size() const
     {
-        return chain_to_mat.size();
+        return chain_to_index.size();
     }
 };
 
@@ -378,11 +459,11 @@ void explore_tangible_marking(const PetriNet &petri_net,
 }
 
 template<typename ElementType>
-std::pair<MarkingChain<ElementType>, MarkingChainInitState> generate_marking_chain(const PetriNet &petri_net,
-                                                                                   const IterStopCondition van_chain_stop_condition)
+std::pair<MarkingChain<ElementType>, MarkingChainSparseState> generate_marking_chain(const PetriNet &petri_net,
+                                                                                     const IterStopCondition van_chain_stop_condition)
 {
     MarkingChain<ElementType> tan_container_chain;
-    MarkingChainInitState init_state;
+    MarkingChainSparseState init_state;
     std::vector<const MarkingChain<ElementType> *> chain_list{&tan_container_chain};
     if (petri_net.get_init_marking().type == Marking::Vanishing)
     {
@@ -404,18 +485,80 @@ std::pair<MarkingChain<ElementType>, MarkingChainInitState> generate_marking_cha
         explore_tangible_marking(petri_net, chain_list, tan_container_chain, tan_container_chain[current_index],
                                  van_chain_stop_condition);
     }
-    return std::make_pair<MarkingChain<ElementType>, MarkingChainInitState>(std::move(tan_container_chain),
-                                                                            std::move(init_state));
+    return std::make_pair<MarkingChain<ElementType>, MarkingChainSparseState>(std::move(tan_container_chain),
+                                                                              std::move(init_state));
 }
 
+template<typename ElementType>
+ColSparseM markingchain_to_Qmatrix(
+        const MarkingChain<ElementType> &chain,
+        ChainIndexMapper *mapper = nullptr)
+{
+    uint_t dim = chain.size();
+    ColSparseM Qmat(dim);
+    for (uint_t i = 0; i < dim; i++)
+    {
+        auto ele_ptr = chain[i];
+        uint_t mat_ind = mapper == nullptr ? i : mapper->from_chain(i);
+        double out_sum = 0.0;
+        if (ele_ptr->get_out_degree() != 0)
+        {
+            Qmat.alloc_major(mat_ind, ele_ptr->get_out_degree() + 1);
+            for (auto arc : ele_ptr->get_to_arc_list())
+            {
+                auto dest_ptr = static_cast<ElementType *>(arc.dest_ele);
+                uint_t dest_mat_ind = mapper == nullptr ?
+                                      dest_ptr->get_index() : mapper->from_chain(dest_ptr->get_index());
+                //assume no self loop
+                if (arc.val != 0.0)
+                {
+                    Qmat.add_entry(mat_ind, dest_mat_ind, arc.val);
+                }
+            }
+            Qmat.add_entry(mat_ind, mat_ind, -ele_ptr->get_out_sum());
+            Qmat.assemble(mat_ind);
+        }
+    }
+    return Qmat;
+}
 
-ChainMatrixMapper index_tangible_chain(const MarkingChain<BasicChainElement> &chain);
+Vector markingchain_init_to_vector(std::vector<ElementProb> init, uint_t dim);
 
 
-std::tuple<ColSparseM, Vector, ChainMatrixMapper> markingchain_to_Qmatrix(
-        const MarkingChain<BasicChainElement> &chain,
-        const MarkingChainInitState &chain_init);
+template<typename ElementType>
+ColSparseM markingchain_to_Pmatrix(const MarkingChain<ElementType> &chain, ChainIndexMapper *mapper = nullptr)
+{
+    uint_t dim = chain.size();
+    ColSparseM Pmat(dim);
+    for (uint_t i = 0; i < dim; i++)
+    {
+        auto ele_ptr = chain[i];
+        uint_t mat_ind = mapper == nullptr ? i : mapper->from_chain(i);
+        if (ele_ptr->get_out_degree() == 0)
+        {
+            Pmat.alloc_major(mat_ind, 1);
+            Pmat.add_entry(mat_ind, mat_ind, 1.0);
+        } else
+        {
+            Pmat.alloc_major(mat_ind, ele_ptr->get_out_degree());
+            for (auto arc : ele_ptr->get_to_arc_list())
+            {
+                auto dest_ptr = static_cast<ElementType *>(arc.dest_ele);
+                uint_t dest_mat_ind = mapper == nullptr ?
+                                      dest_ptr->get_index() : mapper->from_chain(dest_ptr->get_index());
+                if (arc.val != 0.0)
+                {
+                    Pmat.add_entry(mat_ind, dest_mat_ind, arc.val / ele_ptr->get_out_sum());
+                }
+            }
+        }
 
-std::tuple<ColSparseM, Vector, ChainMatrixMapper> markingchain_to_Pmatrix(
-        const MarkingChain<BasicChainElement> &chain,
-        const MarkingChainInitState &chain_init);
+        Pmat.assemble(mat_ind);
+    }
+
+    return Pmat;
+}
+
+Vector solve_marking_chain(const MarkingChain<ChainElement> &chain,
+                           const std::vector<ElementProb> &chain_init_vec,
+                           const IterStopCondition &stop_condition);

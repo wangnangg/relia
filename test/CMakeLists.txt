@@ -4,9 +4,9 @@ add_subdirectory(googletest)
 
 set(CMAKE_CXX_STANDARD 14)
 include_directories(../)
+add_definitions(-DLOG_LEVEL_2)
+add_definitions(-DUSE_STDOUT)
 set(SOURCE_FILES
-        helper.h
-        helper.cpp
         petri_net_collection.cpp
         petri_net_collection.h
         test_petri_net.cpp

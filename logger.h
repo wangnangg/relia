@@ -4,19 +4,32 @@
 
 #ifndef RELIAPY_LOGGER_H
 #define RELIAPY_LOGGER_H
+
 #include <iostream>
 #include <fstream>
-
 extern std::ofstream __log_file;
 
+
 #ifdef LOG_LEVEL_1
-#define LOG1(s) __log_file << s << std::endl;
+#ifdef USE_STDOUT
+#define LOG_FILE std::cout;
+#define LOG_INIT
+#else
+#define LOG_FILE __log_file;
+#define LOG_INIT std::ofstream __log_file("relia.log", std::ios::out | std::ios::trunc);
+#endif
+#define LOG1(s) LOG_FILE << s << std::endl;
 #define LOG2(s)
-#define LOG_INIT std::ofstream __log_file("relia.log", std::ios::out | std::ios::trunc);
 #elif defined(LOG_LEVEL_2)
-#define LOG1(s) __log_file << s << std::endl;
-#define LOG2(s) __log_file << s << std::endl;
+#ifdef USE_STDOUT
+#define LOG_FILE std::cout
+#define LOG_INIT
+#else
+#define LOG_FILE __log_file;
 #define LOG_INIT std::ofstream __log_file("relia.log", std::ios::out | std::ios::trunc);
+#endif
+#define LOG1(s) LOG_FILE << s << std::endl;
+#define LOG2(s) LOG_FILE << s << std::endl;
 #else
 #define LOG1(s)
 #define LOG2(s)

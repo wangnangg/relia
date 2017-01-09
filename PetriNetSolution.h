@@ -1,7 +1,3 @@
-//
-// Created by wangnan on 1/4/17.
-//
-
 #ifndef RELIA_PETRINETSOLUTION_H
 #define RELIA_PETRINETSOLUTION_H
 
@@ -28,19 +24,24 @@ struct Option
     uint_t van_chain_max_iter;
     double van_chain_precision;
 };
-
-std::pair<Vector, ChainMatrixMapper> solve_ss_power(const MarkingChain<BasicChainElement> &chain,
-                                                    const MarkingChainInitState &chain_init,
+struct MarkingVal
+{
+    const Marking* marking;
+    double prob;
+    double stay_time;
+    MarkingVal(const Marking* marking, double prob, double stay_time):marking(marking),prob(prob), stay_time(stay_time)
+    {}
+};
+std::vector<MarkingVal> solve_ss_power(const PetriNet& petri_net,
                                                     IterStopCondition &stop_condition);;
 
-std::pair<Vector, ChainMatrixMapper> solve_ss_sor(const MarkingChain<BasicChainElement> &chain,
-                                                  const MarkingChainInitState &chain_init,
+std::vector<MarkingVal> solve_ss_sor(const PetriNet& petri_net,
                                                   IterStopCondition &stop_condition,
                                                   double omega);;
 
-std::pair<Vector, ChainMatrixMapper> solve_ss_auto(const MarkingChain<BasicChainElement> &chain,
-                                                   const MarkingChainInitState &chain_init,
+std::vector<MarkingVal> solve_ss_auto(const PetriNet& petri_net,
                                                    IterStopCondition &stop_condition);
+
 
 class PetriNetSolution
 {
@@ -130,55 +131,44 @@ public:
         return cum_reward[reward_index];
     }
 
-    IterStopCondition solve_steady_state()
+    void solve_steady_state()
     {
         LOG1(__FUNCTION__);
         petri_net.finalize();
-        IterStopCondition van_chain_stop_condition(option.van_chain_max_iter, option.van_chain_precision);
-        auto result = generate_marking_chain<BasicChainElement>(petri_net, van_chain_stop_condition);
-        auto &chain = result.first;
-        auto &chain_init = result.second;
         IterStopCondition stop_condition(option.max_interation, option.precision);
-        Vector sol;
-        ChainMatrixMapper mapper;
+        std::vector<MarkingVal> result;
         switch (option.steady_state_method)
         {
             case Option::SS_Power:
-                std::tie(sol, mapper) = solve_ss_power(chain, chain_init, stop_condition);
-                break;
+                result = solve_ss_power(petri_net, stop_condition);
             case Option::SS_SOR:
-                std::tie(sol, mapper) = solve_ss_sor(chain, chain_init, stop_condition, option.sor_omega);
-                break;
+                result = solve_ss_sor(petri_net, stop_condition, option.sor_omega);
             default:
-                std::tie(sol, mapper) = solve_ss_auto(chain, chain_init, stop_condition);
+                result = solve_ss_auto(petri_net, stop_condition);
                 break;
         }
         inst_reward.clear();
         for (uint_t i = 0; i < inst_reward_func.size(); i++)
         {
-            inst_reward.push_back(eval_reward(chain, mapper, sol, inst_reward_func[i]));
+            inst_reward.push_back(eval_reward(result, inst_reward_func[i]));
         }
-        return stop_condition;
-
 
     }
 
 private:
 
-    double eval_reward(const MarkingChain<BasicChainElement> &chain,
-                       const ChainMatrixMapper &mapper,
-                       const Vector &sol,
+    double eval_reward(const std::vector<MarkingVal>& result,
                        RewardFuncType func)
     {
         double reward = 0.0;
-        for (uint_t i = 0; i < chain.size(); i++)
+        for(const MarkingVal& m_val : result)
         {
-            const auto &ele = chain[i];
-            PetriNetContext context{&petri_net, &ele->get_marking()};
-            double val = func(&context);
-            uint_t chain_ind = ele->get_index();
-            uint_t mat_ind = mapper.chain2mat(chain_ind);
-            reward += sol(mat_ind) * val;
+            if(m_val.prob != 0)
+            {
+                PetriNetContext context{&petri_net, m_val.marking};
+                double reward_rate = func(&context);
+                reward += reward_rate * m_val.prob;
+            }
         }
         return reward;
     }

@@ -4,36 +4,32 @@
 
 #include "PetriNetSolution.h"
 LOG_INIT;
-std::pair<Vector, ChainMatrixMapper>
-solve_ss_power(const MarkingChain<BasicChainElement> &chain, const MarkingChainInitState &chain_init,
-               IterStopCondition &stop_condition)
+
+std::vector<MarkingVal> solve_ss_auto(const PetriNet &petri_net, IterStopCondition &stop_condition)
 {
-    auto tuple = markingchain_to_Pmatrix(chain, chain_init);
-    auto &PMatrix = std::get<0>(tuple);
-    auto &sol = std::get<1>(tuple);
-    auto &mapper = std::get<2>(tuple);
-    power_method(PMatrix, sol, stop_condition);
-    return std::make_pair(std::move(sol), std::move(mapper));
+    auto generate_result = generate_marking_chain<ChainElement>(petri_net, stop_condition);
+    auto& chain  = generate_result.first;
+    auto& chain_init = generate_result.second;
+    Vector sol = solve_marking_chain(chain, chain_init, stop_condition);
+    std::vector<MarkingVal> result;
+    result.reserve(chain.size());
+    for(uint_t i=0; i<chain.size(); i++)
+    {
+       result.emplace_back(&chain[i]->get_marking(), sol(i), 0.0);
+    }
+    return result;
 }
 
-std::pair<Vector, ChainMatrixMapper>
-solve_ss_sor(const MarkingChain<BasicChainElement> &chain, const MarkingChainInitState &chain_init,
-             IterStopCondition &stop_condition, double omega)
+std::vector<MarkingVal> solve_ss_power(const PetriNet &petri_net, IterStopCondition &stop_condition)
 {
-    auto tuple = markingchain_to_Qmatrix(chain, chain_init);
-    auto &QMatrix = std::get<0>(tuple);
-    auto &sol = std::get<1>(tuple);
-    auto &mapper = std::get<2>(tuple);
-    sol.fill(1.0);
-    auto QMat_row = to_row_sparse(QMatrix);
-    sor_method(sol, QMat_row, stop_condition, omega);
-    sol.scale(1.0 / norm1(sol));
-    return std::make_pair(std::move(sol), std::move(mapper));
+//    auto generate_result = generate_marking_chain<BasicChainElement>(petri_net, stop_condition);
+//    auto &chain = generate_result.first;
+//    auto &chain_init = generate_result.second;
+//    auto Pmat = markingchain_to_Pmatrix(chain);
+    return std::vector<MarkingVal>();
 }
 
-std::pair<Vector, ChainMatrixMapper>
-solve_ss_auto(const MarkingChain<BasicChainElement> &chain, const MarkingChainInitState &chain_init,
-              IterStopCondition &stop_condition)
+std::vector<MarkingVal> solve_ss_sor(const PetriNet &petri_net, IterStopCondition &stop_condition, double omega)
 {
-    return solve_ss_sor(chain, chain_init, stop_condition, 1.0);
+    return std::vector<MarkingVal>();
 }
