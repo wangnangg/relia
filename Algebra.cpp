@@ -6,8 +6,8 @@
 
 void sor_method(Vector &x, const RowSparseM &Q, IterStopCondition &stop_condition, double omega)
 {
-    LOG2("sor solving Qx=0:\n" << display(Q))
-    LOG2("start with x = :" << display(x))
+    LOG2("sor solving Qx=0:\n" << display(Q));
+    LOG2("start with x = :" << display(x));
     uint_t dim = Q.dim();
     RowSparseM L(dim), U(dim), D(dim);
     split_lud(L, U, D, Q);
@@ -28,12 +28,12 @@ void sor_method(Vector &x, const RowSparseM &Q, IterStopCondition &stop_conditio
         }
         sub(res, x, x_next);
     } while (!stop_condition.should_stop(iter_count, res));
-    LOG2("sor x = :" << display(x))
+    LOG2("sor x = :" << display(x));
 }
 void sor_method(Vector &x, const RowSparseM &Q, double alpha, Vector b, IterStopCondition &stop_condition, double omega)
 {
-    LOG2("sor solving Qx=b\n" << display(Q) << "b = " << display(b))
-    LOG2("start with x = " << display(x))
+    LOG2("sor solving Qx=b\n" << display(Q) << "b = " << display(b));
+    LOG2("start with x = " << display(x));
     uint_t dim = Q.dim();
     RowSparseM L(dim), U(dim), D(dim);
     split_lud(L, U, D, Q);
@@ -55,5 +55,5 @@ void sor_method(Vector &x, const RowSparseM &Q, double alpha, Vector b, IterStop
         }
         sub(res, x, x_next);
     } while (!stop_condition.should_stop(iter_count, res));
-    LOG2("sor x = " << display(x))
+    LOG2("sor x = " << display(x));
 }

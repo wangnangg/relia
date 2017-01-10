@@ -87,22 +87,21 @@ double eval_level_tau(const AcyclicMarkingChain &chain, const std::vector<uint_t
     return level_tau;
 }
 
-MarkingChain<AcyclicChainElement>
-generate_next_level_chain(const PetriNet &petri_net, const MarkingChain<AcyclicChainElement> &current_level,
-                          const IterStopCondition van_chain_stop_condition)
+void generate_next_level_chain(const PetriNet &petri_net, const MarkingChain<AcyclicChainElement> &current_level,
+                          const IterStopCondition van_chain_stop_condition,
+                          MarkingChain<AcyclicChainElement>& next_level)
 {
-    MarkingChain<AcyclicChainElement> next_level;
     std::vector<const MarkingChain<AcyclicChainElement> *> chain_list{&current_level, &next_level};
     for (uint_t i = 0; i < current_level.size(); i++)
     {
         explore_tangible_marking(petri_net, chain_list, next_level, current_level[i], van_chain_stop_condition);
     }
-    return next_level;
 }
 
 double compute_acyclic_mtta(const PetriNet &petri_net, const IterStopCondition van_chain_stop_condition)
 {
     MarkingChain<AcyclicChainElement> current_level;
+    MarkingChain<AcyclicChainElement> next_level;
     std::vector<const MarkingChain<AcyclicChainElement> *> chain_list{&current_level};
     if (petri_net.get_init_marking().type == Marking::Vanishing)
     {
@@ -122,10 +121,10 @@ double compute_acyclic_mtta(const PetriNet &petri_net, const IterStopCondition v
     }
 
     double tau = 0;
-    MarkingChain<AcyclicChainElement> next_level;
     do
     {
-        next_level = generate_next_level_chain(petri_net, current_level, van_chain_stop_condition);
+        next_level.clear();
+        generate_next_level_chain(petri_net, current_level, van_chain_stop_condition, next_level);
         auto eval_order = topology_sort(current_level);
         tau += eval_level_tau(current_level, eval_order);
         std::swap(current_level, next_level);

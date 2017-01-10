@@ -109,6 +109,11 @@ public:
         _option.precision = prec;
     }
 
+    void set_halt_condition(std::function<bool(PetriNetContext*)> func)
+    {
+        petri_net.set_halt_condition(func);
+    }
+
     uint_t add_inst_reward_func(RewardFuncType reward_func)
     {
         LOG1(__FUNCTION__);
@@ -123,6 +128,7 @@ public:
 		cum_reward.push_back(0.0);
         return cum_reward_func.size() - 1;
     }
+
 
     double get_inst_reward(uint_t reward_index)
     {

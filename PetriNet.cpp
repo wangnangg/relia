@@ -119,12 +119,16 @@ std::vector<std::pair<Marking, double>> PetriNet::next_markings(const Marking &m
     {
         throw 0;
     }
+    std::vector<std::pair<Marking, double>> result;
+    PetriNetContext context{this, &marking};
+    if(marking.type == Marking::Absorbing)
+    {
+        return result;
+    }
     const Transition *f_enabled_trans = &trans_list[marking.f_enabled_trans_ind];
     uint_t prio = f_enabled_trans->priority;
     uint_t last_ind = f_enabled_trans->type == TransType::Imme ? imme_trans_count : trans_list.size();
 
-    std::vector<std::pair<Marking, double>> result;
-    PetriNetContext context{this, &marking};
     for (uint_t i = marking.f_enabled_trans_ind;
          i < last_ind && trans_list[i].priority == prio;
          i++)
@@ -143,6 +147,11 @@ std::vector<std::pair<Marking, double>> PetriNet::next_markings(const Marking &m
 void PetriNet::set_marking_type(Marking &marking) const
 {
     PetriNetContext context{this, &marking};
+    if(halt_func && halt_func(&context))
+    {
+        marking.type = Marking::Absorbing;
+        return;
+    }
     for (uint_t i = 0; i < trans_list.size(); i++)
     {
         const Transition *t = &trans_list[i];

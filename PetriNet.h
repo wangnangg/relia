@@ -173,6 +173,7 @@ public:
 class PetriNet
 {
     bool finalized = false;
+    std::function<bool(PetriNetContext*)> halt_func;
 public:
     typedef std::function<double(PetriNetContext *)> RewardFuncType;
     Marking init_marking;
@@ -197,6 +198,11 @@ public:
     void add_arc(ArcType type, uint_t trans_index, uint_t place_index, ConstOrVar<uint_t> multi);
 
     void set_init_token(uint_t place_index, uint_t token);
+
+    void set_halt_condition(std::function<bool(PetriNetContext*)> func)
+    {
+        halt_func = func;
+    }
 
     void finalize();
 

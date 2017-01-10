@@ -2,7 +2,7 @@
 #include "MarkingChainSplit.h"
 #include "helper.h"
 #include "logger.h"
-
+#include <limits>
 
 ColSparseM subchain_to_Pmatrix(const Subchain &subchain, ChainIndexMapper *mapper = nullptr)
 {

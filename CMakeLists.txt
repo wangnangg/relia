@@ -4,8 +4,8 @@ add_subdirectory(test)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-#add_definitions(-DLOG_LEVEL_2)
-add_definitions(-DUSE_STDOUT)
+add_definitions(-DLOG_LEVEL_2)
+#add_definitions(-DUSE_STDOUT)
 set(SOURCE_FILES
         helper.h
         helper.cpp
