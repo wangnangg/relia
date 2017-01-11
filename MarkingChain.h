@@ -68,12 +68,12 @@ public:
     }
 };
 
-class ChainElement : public BasicChainElement
+class SubchainElement : public BasicChainElement
 {
     int_t subindex;
     int_t subchain_index;
 public:
-    ChainElement(Marking &&marking, uint_t index) : BasicChainElement(std::move(marking), index),
+    SubchainElement(Marking &&marking, uint_t index) : BasicChainElement(std::move(marking), index),
                                                     subindex(-1),
                                                     subchain_index(-1)
     {}
@@ -184,18 +184,18 @@ public:
 class Subchain
 {
     uint_t myindex;
-    std::vector<ChainElement *> element_list;
-    std::vector<ChainElement *> foreign_element_list;
-    std::map<ChainElement *, uint_t> foreign_map;
+    std::vector<SubchainElement *> element_list;
+    std::vector<SubchainElement *> foreign_element_list;
+    std::map<SubchainElement *, uint_t> foreign_map;
 public:
-    Subchain(uint_t index, const MarkingChain<ChainElement> &chain, const std::vector<uint_t> &ele_ind_list);
+    Subchain(uint_t index, const MarkingChain<SubchainElement> &chain, const std::vector<uint_t> &ele_ind_list);
 
     bool is_absorbing() const
     {
         return foreign_element_list.size() == 0;
     }
 
-    bool owns(ChainElement *ele) const
+    bool owns(SubchainElement *ele) const
     {
         return ele->get_subchain_index() == myindex;
     }
@@ -210,7 +210,7 @@ public:
         return foreign_element_list.size();
     }
 
-    ChainElement *operator[](uint_t ind) const
+    SubchainElement *operator[](uint_t ind) const
     {
         if (ind < element_list.size())
         {
@@ -219,7 +219,7 @@ public:
         return foreign_element_list[ind - element_list.size()];
     }
 
-    uint_t find_foreign_element_index(ChainElement *ele) const
+    uint_t find_foreign_element_index(SubchainElement *ele) const
     {
         return foreign_map.at(ele) + element_list.size();
     }
@@ -557,8 +557,6 @@ ColSparseM markingchain_to_Qmatrix(
     return Qmat;
 }
 
-Vector markingchain_init_to_vector(std::vector<ElementProb> init, uint_t dim);
-
 
 template<typename ElementType>
 ColSparseM markingchain_to_Pmatrix(const MarkingChain<ElementType> &chain, ChainIndexMapper *mapper = nullptr)
@@ -594,16 +592,7 @@ ColSparseM markingchain_to_Pmatrix(const MarkingChain<ElementType> &chain, Chain
     return Pmat;
 }
 
-struct SSChainSolution
-{
-    Vector prob;
-    Vector stay_time;
 
-    SSChainSolution(uint_t dim) : prob(dim), stay_time(dim)
-    {}
+ColSparseM subchain_to_Qmatrix(const Subchain &subchain, ChainIndexMapper *mapper = nullptr);
+ColSparseM subchain_to_Pmatrix(const Subchain &subchain, ChainIndexMapper *mapper = nullptr);
 
-};
-
-SSChainSolution ss_divide_solve_marking_chain(const MarkingChain<ChainElement> &chain,
-                                              const std::vector<ElementProb> &chain_init_vec,
-                                              const IterStopCondition &stop_condition);

@@ -4,29 +4,37 @@
 
 #ifndef RELIAPY_EXPORTTYPE_H
 #define RELIAPY_EXPORTTYPE_H
-struct Node
+
+class Node
 {
+public:
     unsigned index;
-    unsigned type; //0 for place ,1 for imm trans, 2 for exp trans
+    unsigned type; //0 for place ,1 for imm trans, 2 for exp trans, 3 for chain_element
     double param;
-    bool is_param_var;
     Node() = default;
-    Node(unsigned index, unsigned type, double param, bool is_param_var):
+    Node(unsigned index, unsigned type, double param):
             index(index),
             type(type),
-            param(param),
-            is_param_var(is_param_var){}
+            param(param) {}
 };
 
-struct Edge
+class Edge
 {
+public:
     unsigned src;
     unsigned dest;
-    unsigned type; //0 for in, 1 for out, 2 for inhibitor
-    unsigned multi;
-    bool is_multi_var;
+    unsigned type; //0 for in, 1 for out, 2 for inhibitor, 3 for chain_arc
+    double param; //multiplicity or rate
     Edge() = default;
-    Edge(unsigned src, unsigned dest, unsigned type, unsigned multi, bool is_multi_var):
-            src(src), dest(dest), type(type), multi(multi), is_multi_var(is_multi_var) {}
+    Edge(unsigned src, unsigned dest, unsigned type, double param):
+            src(src), dest(dest), type(type), param(param) {}
+};
+
+class Graph
+{
+public:
+    std::vector<Node> node_list;
+    std::vector<Edge> edge_list;
+    Graph() = default;
 };
 #endif //RELIAPY_EXPORTTYPE_H

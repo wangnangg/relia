@@ -9,6 +9,8 @@
 #include <fstream>
 extern std::ofstream __log_file;
 
+//TODO: multi-level log
+
 #ifdef _DEBUG
 #define LOG_LEVEL_2
 #endif

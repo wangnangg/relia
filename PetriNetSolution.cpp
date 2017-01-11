@@ -3,6 +3,7 @@
 //
 
 #include "PetriNetSolution.h"
+#include "MarkingChainSolve.h"
 LOG_INIT;
 
 template <typename ElementType>
@@ -18,7 +19,7 @@ std::vector<MarkingVal> translate_solution(MarkingChain<ElementType> chain, cons
 }
 std::vector<MarkingVal> solve_ss_divide(const PetriNet &petri_net, const IterStopCondition &stop_condition)
 {
-	auto generate_result = generate_marking_chain<ChainElement>(petri_net, stop_condition);
+	auto generate_result = generate_marking_chain<SubchainElement>(petri_net, stop_condition);
     auto& chain  = generate_result.first;
     auto& chain_init = generate_result.second;
     SSChainSolution sol = ss_divide_solve_marking_chain(chain, chain_init, stop_condition);

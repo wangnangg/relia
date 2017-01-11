@@ -16,7 +16,7 @@ struct SCCVertex
 };
 
 //TODO: A non-recursive version.
-void recursive_visit(const MarkingChain<ChainElement> &chain,
+void recursive_visit(const MarkingChain<SubchainElement> &chain,
                      std::vector<SCCVertex>& vertex_info,
                      uint_t v_ind,
                      uint_t& visit_index,
@@ -31,7 +31,7 @@ void recursive_visit(const MarkingChain<ChainElement> &chain,
     v.onstack = true;
     for(auto arc : chain[v_ind]->get_to_arc_list())
     {
-        auto dest_ele = (ChainElement *) arc.dest_ele;
+        auto dest_ele = (SubchainElement *) arc.dest_ele;
         uint_t dest_ind = dest_ele->get_index();
         auto& w = vertex_info[dest_ind];
         if(w.index == 0)
@@ -60,7 +60,7 @@ void recursive_visit(const MarkingChain<ChainElement> &chain,
 
 }
 
-std::vector<Subchain> split_to_subchains(const MarkingChain<ChainElement> &chain, std::vector<uint_t> start_ind)
+std::vector<Subchain> split_to_subchains(const MarkingChain<SubchainElement> &chain, std::vector<uint_t> start_ind)
 {
     std::vector<Subchain> subchain_list;
     std::vector<SCCVertex> vertex_info(chain.size());

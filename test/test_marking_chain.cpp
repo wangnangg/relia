@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <MarkingChainSplit.h>
 #include "petri_net_collection.h"
+#include "MarkingChainSolve.h"
 #include "helper.h"
 
 IterStopCondition stop_cond(1000, 1e-6, 10);
@@ -19,7 +20,7 @@ TEST(MarkingChain, ss_solve)
     for (auto f : petri_nets)
     {
         std::cout << "start of solve:" << std::endl;
-        auto chain_pair = generate_marking_chain<ChainElement>(f(), stop_cond);
+        auto chain_pair = generate_marking_chain<SubchainElement>(f(), stop_cond);
         auto& chain = chain_pair.first;
         auto& chain_init = chain_pair.second;
         IterStopCondition stop_condition(1000, 1e-6, 10);
@@ -34,14 +35,14 @@ TEST(MarkingChain, split)
 {
     for (auto f : petri_nets)
     {
-        auto chain_pair = generate_marking_chain<ChainElement>(f(), stop_cond);
+        auto chain_pair = generate_marking_chain<SubchainElement>(f(), stop_cond);
         auto& chain = chain_pair.first;
         auto& chain_init = chain_pair.second;
         std::vector<uint_t> start_ind;
         start_ind.reserve(chain_init.size());
         for(auto prob_pair : chain_init)
         {
-            auto ele_ptr = (ChainElement*)prob_pair.ele;
+            auto ele_ptr = (SubchainElement*)prob_pair.ele;
             start_ind.push_back(ele_ptr->get_index());
         }
         auto subchain_list = split_to_subchains(chain, start_ind);

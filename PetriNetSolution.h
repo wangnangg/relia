@@ -13,7 +13,7 @@ struct Option
         SS_Auto = 0,
         SS_SOR = 1,
         SS_Power = 2,
-		SS_Divide = 3
+        SS_Divide = 3
     } steady_state_method;
     enum TSMethod
     {
@@ -23,26 +23,32 @@ struct Option
     uint_t max_interation;
     uint_t check_interval;
     double precision;
-    Option(const Option&) = delete;
+
+    Option(const Option &) = delete;
+
     Option() = default;
 };
+
 struct MarkingVal
 {
     Marking marking;
     double prob;
     double stay_time;
-    MarkingVal(Marking marking, double prob, double stay_time):marking(std::move(marking)),prob(prob), stay_time(stay_time)
+
+    MarkingVal(Marking marking, double prob, double stay_time) : marking(std::move(marking)), prob(prob),
+                                                                 stay_time(stay_time)
     {}
 };
-std::vector<MarkingVal> solve_ss_power(const PetriNet& petri_net,
-                                                    const IterStopCondition &stop_condition);;
 
-std::vector<MarkingVal> solve_ss_sor(const PetriNet& petri_net,
-                                                  const IterStopCondition &stop_condition,
-                                                  double omega);;
+std::vector<MarkingVal> solve_ss_power(const PetriNet &petri_net,
+                                       const IterStopCondition &stop_condition);;
 
-std::vector<MarkingVal> solve_ss_auto(const PetriNet& petri_net,
-                                                   const IterStopCondition &stop_condition);
+std::vector<MarkingVal> solve_ss_sor(const PetriNet &petri_net,
+                                     const IterStopCondition &stop_condition,
+                                     double omega);;
+
+std::vector<MarkingVal> solve_ss_auto(const PetriNet &petri_net,
+                                      const IterStopCondition &stop_condition);
 
 std::vector<MarkingVal> solve_ss_divide(const PetriNet &petri_net, const IterStopCondition &stop_condition);
 
@@ -109,7 +115,7 @@ public:
         _option.precision = prec;
     }
 
-    void set_halt_condition(std::function<bool(PetriNetContext*)> func)
+    void set_halt_condition(std::function<bool(PetriNetContext *)> func)
     {
         LOG1(__FUNCTION__);
         petri_net.set_halt_condition(func);
@@ -119,7 +125,7 @@ public:
     {
         LOG1(__FUNCTION__);
         inst_reward_func.push_back(reward_func);
-		inst_reward.push_back(0.0);
+        inst_reward.push_back(0.0);
         return inst_reward_func.size() - 1;
     }
 
@@ -127,7 +133,7 @@ public:
     {
         LOG1(__FUNCTION__);
         cum_reward_func.push_back(reward_func);
-		cum_reward.push_back(0.0);
+        cum_reward.push_back(0.0);
         return cum_reward_func.size() - 1;
     }
 
@@ -144,16 +150,25 @@ public:
         return cum_reward[reward_index];
     }
 
-	void solve_steady_state();
+    void solve_steady_state();
+
+    template<typename T>
+    std::pair<MarkingChain<T>, MarkingChainSparseState> gen_marking_chain()
+    {
+        petri_net.finalize();
+        IterStopCondition stop_condition(option.max_interation, option.precision, option.check_interval);
+        auto chain_pair = generate_marking_chain<T>(petri_net, stop_condition);
+        return chain_pair;
+    }
 
 private:
-	void update_reward(const std::vector<MarkingVal>& result);
+    void update_reward(const std::vector<MarkingVal> &result);
 
-	void clear_reward()
-	{
-		std::fill(inst_reward.begin(), inst_reward.end(), 0.0);
-		std::fill(cum_reward.begin(), cum_reward.end(), 0.0);
-	}
+    void clear_reward()
+    {
+        std::fill(inst_reward.begin(), inst_reward.end(), 0.0);
+        std::fill(cum_reward.begin(), cum_reward.end(), 0.0);
+    }
 };
 
 #endif //RELIA_PETRINETSOLUTION_H
