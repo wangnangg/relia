@@ -10,7 +10,7 @@ TEST(Algebra, power_method)
             0, 1.0 / 3.0, 1
     });
     Vector v0 = Vector({1, 0, 0});
-    IterStopCondition stop_condtion(100, 1e-6);
+    IterStopCondition stop_condtion(100, 1e-6, 10);
     power_method(m0, v0, stop_condtion);
     display(v0);
     std::cout << "used iteration:" << stop_condtion.get_used_iter() << std::endl;
@@ -23,7 +23,7 @@ TEST(Algebra, power_method)
             0, 0.5, 1, 1
     });
     Vector v1 = Vector({1, 0, 0, 0});
-    IterStopCondition stop_condtion1(10, 1e-10);
+    IterStopCondition stop_condtion1(10, 1e-10, 10);
     power_method(m1, v1, stop_condtion1);
     display(v1);
     std::cout << "used iteration:" << stop_condtion1.get_used_iter() << std::endl;
@@ -39,7 +39,7 @@ TEST(Algebra, sor_method)
             0, 1, -3, 2,
             0, 0, 1, -2
     });
-    IterStopCondition stop_condtion(100, 1e-6);
+    IterStopCondition stop_condtion(100, 1e-6, 10);
     Vector x(4);
     x.fill(1.0);
     sor_method(x, Q, stop_condtion, 1.0);

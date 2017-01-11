@@ -27,13 +27,13 @@ public:
     typedef std::function<T(PetriNetContext *)> CallBack;
 
     typedef T (CallBackFuncPtr)(PetriNetContext *);
-
-private:
     enum Type
     {
         Const = 0,
         Var = 1
-    } type;
+    };
+private:
+    Type type;
     struct
     {
         T val;
@@ -144,6 +144,7 @@ public:
 class Transition
 {
 public:
+    uint_t index;
     std::vector<Arc> in_arc_list;
     std::vector<Arc> out_arc_list;
     std::vector<Arc> inhibitor_arc_list;
@@ -154,7 +155,8 @@ public:
 public:
     Transition() = default;
 
-    Transition(TransType type, ConstOrVar<bool> guard, ConstOrVar<double> param, uint_t priority) :
+    Transition(uint_t index, TransType type, ConstOrVar<bool> guard, ConstOrVar<double> param, uint_t priority) :
+            index(index),
             in_arc_list(0),
             out_arc_list(0),
             inhibitor_arc_list(0),
@@ -174,6 +176,7 @@ class PetriNet
 {
     bool finalized = false;
     std::function<bool(PetriNetContext*)> halt_func;
+    std::vector<uint_t> trans_index_map;
 public:
     typedef std::function<double(PetriNetContext *)> RewardFuncType;
     Marking init_marking;
@@ -218,7 +221,7 @@ public:
 
     bool is_transition_enabled(uint_t trans_index, PetriNetContext *context) const
     {
-        return trans_list[trans_index].is_enabled(context);
+        return trans_list[trans_index_map[trans_index]].is_enabled(context);
     }
 
     uint_t get_token_num(uint_t place_index, PetriNetContext *context) const
@@ -237,6 +240,15 @@ public:
         }
     }
 
+    uint_t place_count() const
+    {
+        return init_marking.token_list.size();
+    }
+
+    uint_t trans_count() const
+    {
+        return trans_list.size();
+    }
 
 private:
     void set_marking_type(Marking &marking) const;

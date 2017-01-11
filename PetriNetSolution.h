@@ -21,9 +21,10 @@ struct Option
     } transient_state_method;
     double sor_omega;
     uint_t max_interation;
+    uint_t check_interval;
     double precision;
-    uint_t van_chain_max_iter;
-    double van_chain_precision;
+    Option(const Option&) = delete;
+    Option() = default;
 };
 struct MarkingVal
 {
@@ -66,11 +67,10 @@ public:
         LOG1(__FUNCTION__);
         _option.steady_state_method = Option::SS_Auto;
         _option.transient_state_method = Option::TS_Auto;
-        _option.max_interation = 10000;
-        _option.precision = 1e-10;
+        _option.max_interation = 100000;
+        _option.precision = 1e-6;
         _option.sor_omega = 1.0;
-        _option.van_chain_max_iter = 10000;
-        _option.van_chain_precision = 1e-10;
+        _option.check_interval = 10;
     }
 
     ~PetriNetSolution()
@@ -81,36 +81,37 @@ public:
     //option
     void set_ss_method(Option::SSMethod method)
     {
-        LOG1(__FUNCTION__);
+        LOG1(__FUNCTION__ << ": " << method);
         _option.steady_state_method = method;
     }
 
     void set_ts_method(Option::TSMethod method)
     {
-        LOG1(__FUNCTION__);
+        LOG1(__FUNCTION__ << ": " << method);
         _option.transient_state_method = method;
     }
 
     void set_sor_omega(double omega)
     {
-        LOG1(__FUNCTION__);
+        LOG1(__FUNCTION__ << ": " << omega);
         _option.sor_omega = omega;
     }
 
     void set_max_iter(uint_t iter)
     {
-        LOG1(__FUNCTION__);
+        LOG1(__FUNCTION__ << ": " << iter);
         _option.max_interation = iter;
     }
 
     void set_precision(double prec)
     {
-        LOG1(__FUNCTION__);
+        LOG1(__FUNCTION__ << ": " << prec);
         _option.precision = prec;
     }
 
     void set_halt_condition(std::function<bool(PetriNetContext*)> func)
     {
+        LOG1(__FUNCTION__);
         petri_net.set_halt_condition(func);
     }
 
@@ -124,6 +125,7 @@ public:
 
     uint_t add_cum_reward_func(RewardFuncType reward_func)
     {
+        LOG1(__FUNCTION__);
         cum_reward_func.push_back(reward_func);
 		cum_reward.push_back(0.0);
         return cum_reward_func.size() - 1;

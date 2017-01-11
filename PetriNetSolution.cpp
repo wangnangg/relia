@@ -29,7 +29,7 @@ void PetriNetSolution::solve_steady_state()
 {
 	LOG1(__FUNCTION__);
 	petri_net.finalize();
-	IterStopCondition stop_condition(option.max_interation, option.precision);
+	IterStopCondition stop_condition(option.max_interation, option.precision, option.check_interval);
 	std::vector<MarkingVal> result;
 	switch (option.steady_state_method)
 	{

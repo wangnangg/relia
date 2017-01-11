@@ -109,8 +109,8 @@ SSTangibleSubchainSolution ss_solve_tangible_subchain(const Subchain &subchain,
 	auto Qmat_row = to_row_sparse(Qmat);
 	solution.stay_time.fill(0.0);
 	
-	stop_cond = stop_condition;
-	sor_method(solution.stay_time, Qmat_row, -1.0, std::move(subchain_init), stop_cond, 1.0);
+	IterStopCondition sor_stop_cond(stop_condition);
+	sor_method(solution.stay_time, Qmat_row, -1.0, std::move(subchain_init), sor_stop_cond, 1.0);
 	LOG2("stay_time = " << display(solution.stay_time));
 	return solution;
 }

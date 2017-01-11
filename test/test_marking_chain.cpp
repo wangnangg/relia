@@ -3,7 +3,7 @@
 #include "petri_net_collection.h"
 #include "helper.h"
 
-IterStopCondition stop_cond;
+IterStopCondition stop_cond(1000, 1e-6, 10);
 
 TEST(MarkingChain, generate)
 {
@@ -22,7 +22,7 @@ TEST(MarkingChain, ss_solve)
         auto chain_pair = generate_marking_chain<ChainElement>(f(), stop_cond);
         auto& chain = chain_pair.first;
         auto& chain_init = chain_pair.second;
-        IterStopCondition stop_condition(1000, 1e-6);
+        IterStopCondition stop_condition(1000, 1e-6, 10);
 		std::cout << "solving marking chain:\n" << display(markingchain_to_Qmatrix(chain)) << std::endl;
         auto sol = ss_divide_solve_marking_chain(chain, chain_init, stop_condition);
 		std::cout << "solution prob:" << display(sol.prob) << std::endl;

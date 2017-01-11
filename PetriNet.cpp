@@ -51,7 +51,7 @@ uint_t PetriNet::add_transition(TransType type, ConstOrVar<bool> guard, ConstOrV
         imme_trans_count += 1;
     }
     uint_t index = trans_list.size();
-    trans_list.push_back(Transition(type, guard, param, priority));
+    trans_list.push_back(Transition(index, type, guard, param, priority));
     return index;
 }
 
@@ -109,6 +109,12 @@ void PetriNet::finalize()
                   }
               }
     );
+    trans_index_map.resize(trans_list.size());
+    for(uint_t i=0; i<trans_list.size(); i++)
+    {
+        trans_index_map[trans_list[i].index] = i;
+    }
+
     set_marking_type(init_marking);
     finalized = true;
 }

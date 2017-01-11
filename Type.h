@@ -25,6 +25,7 @@ class Exception : public std::exception
     std::string msg;
 public:
     Exception(std::string msg):msg(std::move(msg)) {}
+    ~Exception() = default;
     virtual const char* what() const noexcept
     {
        return msg.c_str();

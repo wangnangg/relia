@@ -21,5 +21,5 @@ set(SOURCE_FILES
         PetriNet.h
         Type.h
         PetriNetSolution.cpp
-        PetriNetSolution.h logger.h MarkingChainSplit.cpp MarkingChainSplit.h)
+        PetriNetSolution.h logger.h MarkingChainSplit.cpp MarkingChainSplit.h Export.h Export.cpp ExportType.h)
 add_library(relia ${SOURCE_FILES})

@@ -5,19 +5,19 @@
 #include "helper.h"
 class IterStopCondition
 {
-	uint_t max_iteration;
-	double precision;
-	double reached_precision = 0.0;
-	uint_t used_iteration_count = 0;
-	uint_t check_interval = 10;
+	const uint_t max_iteration;
+	const double precision;
+	double reached_precision;
+	uint_t used_iteration_count;
+	uint_t check_interval;
 public:
-	IterStopCondition()
-	{
-		max_iteration = 1000;
-		precision = 1e-6;
-	}
+	IterStopCondition() = delete;
+	IterStopCondition(const IterStopCondition& other) = default;
 
-	IterStopCondition(uint_t max_iter, double precision) : max_iteration(max_iter), precision(precision)
+	IterStopCondition(uint_t max_iter, double precision, uint_t check_interval) :
+			max_iteration(max_iter),
+			precision(precision),
+			check_interval(check_interval)
 	{}
 
 	bool should_stop(uint_t iter_count, const Vector &res)
@@ -52,6 +52,30 @@ public:
 	{
 		return check_interval;
 	}
+	uint_t get_max_iter() const
+	{
+		return max_iteration;
+	}
+	double get_target_precision() const
+	{
+		return precision;
+	}
+
+	void assert_precision_reached() const throw(Exception)
+	{
+		if(is_precision_reached())
+		{
+			LOG2("Precision assertion passed." << used_iteration_count << ":" << reached_precision << "(" <<reached_precision <<")");
+			return;
+		}
+		LOG2("Precision assertion failed." << used_iteration_count << ":" << reached_precision << "(" <<reached_precision <<")");
+		std::stringstream ss;
+		ss << "Precision not reached." << std::endl;
+		ss << "Used iteration:" << used_iteration_count << std::endl;
+		ss << "Reached precision:" << reached_precision << std::endl;
+		ss << "Target precision:" << precision << std::endl;
+		throw Exception(ss.str());
+	}
 };
 
 
@@ -75,6 +99,7 @@ void power_method(const M &P, Vector &x, IterStopCondition &stop_condition)
 		sub(res, x, x_next);
 	} while (!stop_condition.should_stop(iter_count, res));
 	LOG2("power x = " << display(x));
+	stop_condition.assert_precision_reached();
 }
 
 

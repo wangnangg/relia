@@ -8,6 +8,7 @@ void sor_method(Vector &x, const RowSparseM &Q, IterStopCondition &stop_conditio
 {
     LOG2("sor solving Qx=0:\n" << display(Q));
     LOG2("start with x = :" << display(x));
+    LOG2("max iter :" << stop_condition.get_max_iter() << ", target precision:" << stop_condition.get_target_precision());
     uint_t dim = Q.dim();
     RowSparseM L(dim), U(dim), D(dim);
     split_lud(L, U, D, Q);
@@ -29,6 +30,7 @@ void sor_method(Vector &x, const RowSparseM &Q, IterStopCondition &stop_conditio
         sub(res, x, x_next);
     } while (!stop_condition.should_stop(iter_count, res));
     LOG2("sor x = :" << display(x));
+    stop_condition.assert_precision_reached();
 }
 void sor_method(Vector &x, const RowSparseM &Q, double alpha, Vector b, IterStopCondition &stop_condition, double omega)
 {
@@ -56,4 +58,5 @@ void sor_method(Vector &x, const RowSparseM &Q, double alpha, Vector b, IterStop
         sub(res, x, x_next);
     } while (!stop_condition.should_stop(iter_count, res));
     LOG2("sor x = " << display(x));
+    stop_condition.assert_precision_reached();
 }

@@ -43,7 +43,7 @@ TEST(Solution, reward_func)
 	double val = solution.get_inst_reward(prob_index);
 	ASSERT_DOUBLE_EQ(val, 1.0);
 	
-	IterStopCondition stop_condition(10000, 1e-10);
+	IterStopCondition stop_condition(10000, 1e-10, 10);
 	double mtta = solution.get_cum_reward(mtta_index);
 	double mtta_acyclic = compute_acyclic_mtta(securityCPS_petri_net(), stop_condition);
 	ASSERT_DOUBLE_EQ(mtta, mtta_acyclic);
