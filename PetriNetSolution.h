@@ -5,7 +5,7 @@
 #include "MarkingChain.h"
 #include "Matrix.h"
 #include "logger.h"
-
+#include "AcyclicMarkingChain.h"
 struct Option
 {
     enum SSMethod
@@ -159,6 +159,13 @@ public:
         IterStopCondition stop_condition(option.max_interation, option.precision, option.check_interval);
         auto chain_pair = generate_marking_chain<T>(petri_net, stop_condition);
         return chain_pair;
+    }
+
+    double acyclic_mtta()
+    {
+        petri_net.finalize();
+        IterStopCondition stop_condition(option.max_interation, option.precision, option.check_interval);
+        return compute_acyclic_mtta(petri_net, stop_condition);
     }
 
 private:

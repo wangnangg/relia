@@ -522,6 +522,8 @@ std::pair<MarkingChain<ElementType>, MarkingChainSparseState> generate_marking_c
         explore_tangible_marking(petri_net, chain_list, tan_container_chain, tan_container_chain[current_index],
                                  van_chain_stop_condition);
     }
+
+    LOG1("reachability graph state count:" << tan_container_chain.size());
     return std::make_pair<MarkingChain<ElementType>, MarkingChainSparseState>(std::move(tan_container_chain),
                                                                               std::move(init_state));
 }

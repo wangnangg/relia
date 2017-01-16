@@ -14,7 +14,6 @@ extern std::ofstream __log_file;
 #ifdef _DEBUG
 #define LOG_LEVEL_2
 #endif
-
 #ifdef LOG_LEVEL_1
 #ifdef USE_STDOUT
 #define LOG_FILE std::cout

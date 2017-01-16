@@ -100,14 +100,15 @@ public:
         Tangible,
         Absorbing
     };
+    typedef unsigned char token_type;
+    std::vector<token_type> token_list;
+    uint_t f_enabled_trans_ind;
+    Type type;
 
 private:
     Marking(const Marking &marking) = default;
 public:
 
-    std::vector<uint_t> token_list;
-    uint_t f_enabled_trans_ind;
-    Type type;
 
     Marking() = delete;
 
@@ -121,6 +122,7 @@ public:
 
     bool operator==(const Marking &other) const
     { return other.token_list == token_list; };
+
 
     Marking clone() const
     {

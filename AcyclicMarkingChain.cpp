@@ -128,6 +128,7 @@ double compute_acyclic_mtta(const PetriNet &petri_net, const IterStopCondition v
         auto eval_order = topology_sort(current_level);
         tau += eval_level_tau(current_level, eval_order);
         std::swap(current_level, next_level);
+        LOG1("current level size" << current_level.size());
     } while (current_level.size() != 0);
     return tau;
 }
