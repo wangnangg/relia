@@ -41,7 +41,6 @@ void display(std::pair<MarkingChain<BasicChainElement>, MarkingChainSparseState>
 
 PetriNet trivial_petri_net()
 {
-	LOG2(__FUNCTION__);
     PetriNet builder(2);
     auto t1 = builder.add_transition(TransType::Exp, true, 0.1, 1);
     auto t2 = builder.add_transition(TransType::Exp, true, 0.2, 1);
@@ -56,7 +55,6 @@ PetriNet trivial_petri_net()
 
 PetriNet molloys_petri_net()
 {
-	LOG2(__FUNCTION__);
     PetriNet builder(5);
     uint_t t0 = builder.add_transition(TransType::Exp, true, 1.0, 1);
     uint_t t1 = builder.add_transition(TransType::Exp, true, 3.0, 1);
@@ -98,7 +96,6 @@ void add_trans(PetriNet &builder, TransType type, double val, std::vector<uint_t
 
 PetriNet acyclic_imme_petri_net()
 {
-	LOG2(__FUNCTION__);
     PetriNet builder(7);
     add_trans(builder, Imme, 1.0, {0}, {1});
     add_trans(builder, Imme, 0.6, {1}, {2});
@@ -114,7 +111,6 @@ PetriNet acyclic_imme_petri_net()
 
 PetriNet acyclic_imme_petri_net2()
 {
-	LOG2(__FUNCTION__);
     PetriNet builder(8);
     add_trans(builder, Exp, 1.0, {7}, {0});
     add_trans(builder, Imme, 1.0, {0}, {1});
@@ -131,7 +127,6 @@ PetriNet acyclic_imme_petri_net2()
 
 PetriNet cyclic_imme_petri_net()
 {
-	LOG2(__FUNCTION__);
     PetriNet builder(7);
     add_trans(builder, Exp, 1.0, {0}, {1});
     add_trans(builder, Imme, 0.5, {1}, {4});
@@ -147,7 +142,6 @@ PetriNet cyclic_imme_petri_net()
 
 PetriNet cyclic_imme_petri_net2()
 {
-	LOG2(__FUNCTION__);
     PetriNet builder(7);
     add_trans(builder, Exp, 1.0, {0}, {1});
     add_trans(builder, Imme, 0.5, {1}, {4});
@@ -164,7 +158,6 @@ PetriNet cyclic_imme_petri_net2()
 
 PetriNet acyclic_trivial_petri_net()
 {
-	LOG2(__FUNCTION__);
     PetriNet builder(2);
     auto t1 = builder.add_transition(Exp, true, 0.1, 1);
     builder.add_arc(In, t1, 0, 1);
@@ -176,7 +169,6 @@ PetriNet acyclic_trivial_petri_net()
 
 PetriNet acyclic_petri_net()
 {
-	LOG2(__FUNCTION__);
     PetriNet builder(7);
     add_trans(builder, Exp, 1.0, {0}, {1});
     add_trans(builder, Exp, 0.6, {1}, {2});
@@ -192,7 +184,6 @@ PetriNet acyclic_petri_net()
 
 PetriNet mixed_class_petri_net()
 {
-	LOG2(__FUNCTION__);
 	PetriNet petri_net(4);
 	add_trans(petri_net, Exp, 1.0, { 0 }, { 1 });
 	add_trans(petri_net, Exp, 2.0, { 1 }, { 0 });
@@ -205,7 +196,6 @@ PetriNet mixed_class_petri_net()
 
 PetriNet mixed_class_petri_net2()
 {
-	LOG2(__FUNCTION__);
 	PetriNet petri_net(5);
 	add_trans(petri_net, Exp, 1.0, { 0 }, { 1 });
 	add_trans(petri_net, Exp, 2.0, { 0 }, { 3 });
@@ -249,12 +239,9 @@ uint_t numHalt(PetriNetContext *context)
     return context->marking->token_list[5];
 }
 
-static uint_t num_nodes = 20;
-static uint_t m = 4;
 
-PetriNet securityCPS_petri_net()
+PetriNet securityCPS_petri_net(uint_t num_nodes, uint_t m)
 {
-	LOG2(__FUNCTION__);
     PetriNet builder;
     builder.set_init_token(0, num_nodes);
     builder.set_init_token(4, 1);
@@ -277,7 +264,7 @@ PetriNet securityCPS_petri_net()
     }), 0);
     auto td = builder.add_transition(Exp, true, 0.0057142095238, 0);
     auto tflush = builder.add_transition(Imme,
-                                         static_cast<ConstOrVar<bool>::CallBack>([](PetriNetContext *context) -> bool
+                                         static_cast<ConstOrVar<bool>::CallBack>([m](PetriNetContext *context) -> bool
                                          {
                                              if (((numG(context) + numB(context) < m) || (numF(context) >= 1) ||
                                                   (numD(context) == 0) ||

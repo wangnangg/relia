@@ -21,7 +21,6 @@ SSTangibleSubchainSolution ss_solve_tangible_subchain(const Subchain &subchain,
 {
 	SSTangibleSubchainSolution solution(subchain.home_element_count());
 	auto Pmat = subchain_to_Pmatrix(subchain);
-	LOG2("solve tangible subchain:\n" << display(Pmat));
 	Vector prob_sol(Pmat.dim());
 	double prob_sum = norm1(subchain_init);
 	for (uint_t i = 0; i < subchain_init.dim(); i++)
@@ -31,7 +30,6 @@ SSTangibleSubchainSolution ss_solve_tangible_subchain(const Subchain &subchain,
 	IterStopCondition stop_cond = stop_condition;
 	power_method(Pmat, prob_sol, stop_cond);
 	double sol_sum = 0;
-	LOG2("prob = " << display(prob_sol));
 	for (uint_t i = subchain.home_element_count(); i < Pmat.dim(); i++)
 	{
 		prob_sol(i) = std::abs(prob_sol(i));
@@ -50,7 +48,6 @@ SSTangibleSubchainSolution ss_solve_tangible_subchain(const Subchain &subchain,
 
 	IterStopCondition sor_stop_cond(stop_condition);
 	sor_method(solution.stay_time, Qmat_row, -1.0, std::move(subchain_init), sor_stop_cond, 1.0);
-	LOG2("stay_time = " << display(solution.stay_time));
 	return solution;
 }
 
@@ -59,7 +56,6 @@ Vector ss_solve_absorbing_subchain(const Subchain &subchain,
 	IterStopCondition &stop_condition)
 {
 	auto Qmat = subchain_to_Qmatrix(subchain);
-	LOG2("solve absorbing subchain:\n" << display(Qmat));
 	auto Qmat_row = to_row_sparse(Qmat);
 	Vector sol(Qmat.dim(), 1.0);
 	sor_method(sol, Qmat_row, stop_condition, 1.0);
@@ -69,7 +65,6 @@ Vector ss_solve_absorbing_subchain(const Subchain &subchain,
 	{
 		sol(i) = std::abs(sol(i)) * factor;
 	}
-	LOG2("normed result(" << prob_sum << "):" << display(sol));
 	return sol;
 }
 
@@ -90,7 +85,6 @@ SSChainSolution ss_divide_solve_marking_chain(const MarkingChain<SubchainElement
 	const IterStopCondition& stop_condition)
 {
 	SSChainSolution solution(chain.size());
-	LOG2("solve marking chain:\n" << display(markingchain_to_Qmatrix(chain)));
 	std::vector<uint_t> start_ind;
 	start_ind.reserve(chain_init_vec.size());
 	for (auto prob_pair : chain_init_vec)
@@ -143,8 +137,8 @@ SSChainSolution ss_divide_solve_marking_chain(const MarkingChain<SubchainElement
 			feed_init_prob(subchain_init_prob_vec, sub_sol.prob);
 		}
 	}
-	LOG2("solution prob = " << display(solution.prob));
-	LOG2("solution stay time = " << display(solution.stay_time));
 	return solution;
 }
+
+
 

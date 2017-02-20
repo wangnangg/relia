@@ -54,7 +54,7 @@ std::string display(const M &m)
     {
         for (uint_t j = 0; j < m.dim(); j++)
         {
-            ss << std::setw(4) << get_matrix_entry(m, i, j) << " ";
+            ss << std::setw(5) << get_matrix_entry(m, i, j) << " ";
         }
         ss << std::endl;
     }

@@ -42,10 +42,10 @@ TEST(Matrix, basic_op)
     });
     Vector v0 = Vector({1, 0, 0});
     Vector v1(3);
-    matvec(v1, m0, v0);
+    matvec(v1, 1.0, m0, v0);
     display(v1);
     ASSERT_TRUE(equal(v1, Vector({0.0, 1.0, 0.0})));
-    sub(v0, v0, v1);
+    vec_add(v0, 1.0, v0, -1.0, v1);
     display(v0);
     ASSERT_TRUE(equal(v0, Vector({1.0, -1.0, 0.0})));
 
@@ -92,28 +92,6 @@ TEST(Matrix, backsolve2)
     Vector ans({30, 30, -12, -9.3333333});
     ASSERT_TRUE(equal(ans, x));
 }
-
-TEST(Matrix, matrix_add)
-{
-    RowSparseM C(4);
-    auto A = create_matrix<RowSparseM>(4, {
-            1, 2, 3, 0,
-            0, 0, 0, 0,
-            0, 0, 1, 2,
-            1, 2, 3, 4
-    });
-    auto B = create_matrix<RowSparseM>(4, {
-            0, 0, 0, 0,
-            3, 0, 1, 0,
-            5, 2, 1, 0,
-            4, 3, 2, 1
-    });
-    add(C, 1.0, A, 1.0, B);
-    display(C);
-    add(C, 2.0, A, 3.0, B);
-    display(C);
-}
-
 
 TEST(Matrix, split_lud)
 {
@@ -167,4 +145,80 @@ TEST(Matrix, convert)
     display_raw(A);
     display_raw(B);
     display_raw(A_);
+}
+
+TEST(Matrix, mat_add_row)
+{
+	auto A = create_matrix<RowSparseM>(4, {
+            1, 2, 3, 4,
+            5, 6, 7, 8,
+            9, 10, 11, 12,
+            13, 14, 15, 16
+    });
+	auto B = create_matrix<RowSparseM>(4, {
+            1, 2, 3, 4,
+            5, 6, 7, 8,
+            9, 10, 11, 12,
+            13, 14, 15, 16
+    });
+	B.scale(1.5);
+	RowSparseM C(B.dim());
+	mat_add(C, 2.0, A, 3.0, B);
+	RowSparseM Ans(A.dim());
+	mat_scale(Ans, 1.5 *3.0 +2.0, A);
+	std::cout << "C:" << std::endl << display(C);
+	std::cout << "Ans:" << std::endl << display(Ans);
+	ASSERT_TRUE(mat_eq(C, Ans, 1e-10));
+}
+
+TEST(Matrix, mat_add_col)
+{
+	auto A = create_matrix<ColSparseM>(4, {
+            1, 2, 3, 4,
+            5, 6, 7, 8,
+            9, 10, 11, 12,
+            13, 14, 15, 16
+    });
+	auto B = create_matrix<ColSparseM>(4, {
+            1, 2, 3, 4,
+            5, 6, 7, 8,
+            9, 10, 11, 12,
+            13, 14, 15, 16
+    });
+	B.scale(1.5);
+	ColSparseM C(B.dim());
+	mat_add(C, 2.0, A, 3.0, B);
+	ColSparseM Ans(A.dim());
+	mat_scale(Ans, 1.5 *3.0 +2.0, A);
+	std::cout << "C:" << std::endl << display(C);
+	std::cout << "Ans:" << std::endl << display(Ans);
+	ASSERT_TRUE(mat_eq(C, Ans, 1e-10));
+}
+TEST(Matrix, mat_add)
+{
+	auto A = create_matrix<RowSparseM>(4, {
+            0, 0, 1, 1,
+            1, 0, 0, 0,
+            0, 0, 1, 1,
+            0, 1, 1, 1
+    });
+	auto B = create_matrix<RowSparseM>(4, {
+            1, 1, 0, 0,
+            1, 0, 0, 0,
+            0, 0, 0, 1,
+            1, 1, 1, 0 
+    });
+
+	auto Ans = create_matrix<RowSparseM>(4, {
+            1, 1, 1, 1,
+            2, 0, 0, 0,
+            0, 0, 1, 2,
+            1, 2, 2, 1 
+    });
+	RowSparseM C(B.dim());
+	mat_add(C, 1.0, A, 1.0, B);
+	std::cout << "C:" << std::endl << display(C);
+	std::cout << "Ans:" << std::endl << display(Ans);
+	ASSERT_TRUE(mat_eq(C, Ans, 1e-10));
+
 }

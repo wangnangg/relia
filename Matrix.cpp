@@ -1,5 +1,4 @@
 #include "Matrix.h"
-#include "logger.h"
 #include <tuple>
 #include <algorithm>
 #include "helper.h"
@@ -7,7 +6,7 @@
 void SparseMatrix::assemble(uint_t i)
 {
 	auto &major = data[i];
-	std::sort(major.begin(), major.end(), [](SparseMatrixEntry a, SparseMatrixEntry b)
+	std::sort(major.begin(), major.end(), [](SparseEntry a, SparseEntry b)
 	{
 		return a.index < b.index;
 	});
@@ -89,30 +88,48 @@ ColSparseM to_col_sparse(const RowSparseM &row_matrix)
 	return result;
 }
 
-void matvec(Vector &v0, const ColSparseM &A, const Vector &v1)
+void matvec(Vector& v0, double alpha, const ColSparseM& A, const Vector& v1)
 {
 	v0.fill(0.0);
 	for (uint_t col_i = 0; col_i < v0.dim(); col_i++)
 	{
 		for (const auto pair : A(col_i))
 		{
-			v0(pair.index) += pair.val * v1(col_i);
+			v0(pair.index) += alpha * pair.val * v1(col_i);
 		}
 	}
-
 }
 
-
-void sub(Vector &v0, const Vector &v1, const Vector &v2)
+void matvec(Vector& v0, double alpha, const RowSparseM& A, const Vector& v1)
 {
+	v0.fill(0.0);
 	for (uint_t row_i = 0; row_i < v0.dim(); row_i++)
 	{
-		v0(row_i) = v1(row_i) - v2(row_i);
+		for (const auto pair : A(row_i))
+		{
+			v0(row_i) += alpha * pair.val * v1(pair.index);
+		}
 	}
 }
 
-int_t next_index(const std::vector<SparseMatrixEntry> &row_a, uint_t &a_j,
-	const std::vector<SparseMatrixEntry> &row_b, uint_t &b_j)
+void vec_add(Vector& v0, double alpha, const Vector& v1, double beta, const Vector& v2)
+{
+	for (uint_t i = 0; i < v0.dim(); i++)
+	{
+		v0(i) = alpha * v1(i) + beta * v2(i);
+	}
+}
+
+void vec_inc(Vector& v0, double alpha, const Vector& v1)
+{
+	for (uint_t i = 0; i < v0.dim(); i++)
+	{
+		v0(i) += alpha * v1(i);
+	}
+}
+
+int_t next_index(const std::vector<SparseEntry> &row_a, uint_t &a_j,
+	const std::vector<SparseEntry> &row_b, uint_t &b_j)
 {
 	if (a_j >= row_a.size() || b_j >= row_b.size())
 	{
@@ -140,10 +157,10 @@ int_t next_index(const std::vector<SparseMatrixEntry> &row_a, uint_t &a_j,
 	return index;
 }
 
-SparseMatrixEntry next_entry(const std::vector<SparseMatrixEntry> &row_a, uint_t &a_j,
-	const std::vector<SparseMatrixEntry> &row_b, uint_t &b_j, double alpha, double beta)
+SparseEntry next_entry(const std::vector<SparseEntry> &row_a, uint_t &a_j,
+	const std::vector<SparseEntry> &row_b, uint_t &b_j, double alpha, double beta)
 {
-	SparseMatrixEntry entry(0, 0);
+	SparseEntry entry(0, 0);
 	if (a_j >= row_a.size())
 	{
 		auto b_e = row_b[b_j];
@@ -205,33 +222,28 @@ double norm2(const Vector &x)
 	return std::sqrt(v);
 }
 
-void add(RowSparseM &C, double alpha, const RowSparseM &A, double beta, const RowSparseM &B)
+void vec_scalar(Vector& v0, double alpha, Vector& v1)
 {
-	uint_t dim = A.dim();
-	for (uint_t i = 0; i < dim; i++)
+	for (uint_t i = 0; i < v0.dim(); i++)
 	{
-		uint_t c_counter;
-		uint_t a_j;
-		uint_t b_j;
-		const auto &a_row = A(i);
-		const auto &b_row = B(i);
-		a_j = 0;
-		b_j = 0;
-		c_counter = 0;
-		while (next_index(a_row, a_j, b_row, b_j) != -1)
+		v0(i) = alpha * v1(i);
+	}
+}
+
+bool vec_eq(const Vector& v0, const Vector& v1, double error)
+{
+	if (v0.dim() != v1.dim())
+	{
+		return false;
+	}
+	for (uint_t i = 0; i < v0.dim(); i++)
+	{
+		if (std::abs(v0(i) - v1(i)) > error)
 		{
-			c_counter += 1;
-		}
-		c_counter += b_row.size() - b_j + a_row.size() - a_j;
-		C.clear(i);
-		C.alloc_major(i, c_counter);
-		a_j = 0;
-		b_j = 0;
-		for (uint_t j = 0; j < c_counter; j++)
-		{
-			C.add_entry(i, next_entry(a_row, a_j, b_row, b_j, alpha, beta));
+			return false;
 		}
 	}
+	return true;
 }
 
 void split_lud(RowSparseM &L, RowSparseM &U, RowSparseM &D, const RowSparseM &A)

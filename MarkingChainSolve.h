@@ -19,4 +19,5 @@ SSChainSolution ss_divide_solve_marking_chain(const MarkingChain<SubchainElement
                                               const std::vector<ElementProb> &chain_init_vec,
                                               const IterStopCondition &stop_condition);
 
+
 #endif //RELIAPY_MARKINGCHAINSOLVE_H

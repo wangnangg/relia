@@ -18,13 +18,7 @@
     <ClInclude Include="AcyclicMarkingChain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Algebra.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="helper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MarkingChain.h">
@@ -45,12 +39,18 @@
     <ClInclude Include="Type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="easylogging++.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MatrixSolve.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Poisson.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AcyclicMarkingChain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Algebra.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="helper.cpp">
@@ -69,6 +69,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PetriNetSolution.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Export.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MarkingChainSolve.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="easylogging++.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MatrixSolve.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Poisson.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

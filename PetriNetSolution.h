@@ -4,7 +4,6 @@
 #include "PetriNet.h"
 #include "MarkingChain.h"
 #include "Matrix.h"
-#include "logger.h"
 
 struct Option
 {
@@ -41,11 +40,11 @@ struct MarkingVal
 };
 
 std::vector<MarkingVal> solve_ss_power(const PetriNet &petri_net,
-                                       const IterStopCondition &stop_condition);;
+                                       const IterStopCondition &stop_condition);
 
 std::vector<MarkingVal> solve_ss_sor(const PetriNet &petri_net,
                                      const IterStopCondition &stop_condition,
-                                     double omega);;
+                                     double omega);
 
 std::vector<MarkingVal> solve_ss_auto(const PetriNet &petri_net,
                                       const IterStopCondition &stop_condition);
@@ -70,7 +69,6 @@ public:
 
     PetriNetSolution() : option(_option), tag(nullptr)
     {
-        LOG1(__FUNCTION__);
         _option.steady_state_method = Option::SS_Auto;
         _option.transient_state_method = Option::TS_Auto;
         _option.max_interation = 100000;
@@ -78,52 +76,39 @@ public:
         _option.sor_omega = 1.0;
         _option.check_interval = 10;
     }
-
-    ~PetriNetSolution()
-    {
-        LOG1(__FUNCTION__);
-    }
-
-    //option
+        //option
     void set_ss_method(Option::SSMethod method)
     {
-        LOG1(__FUNCTION__ << ": " << method);
         _option.steady_state_method = method;
     }
 
     void set_ts_method(Option::TSMethod method)
     {
-        LOG1(__FUNCTION__ << ": " << method);
         _option.transient_state_method = method;
     }
 
     void set_sor_omega(double omega)
     {
-        LOG1(__FUNCTION__ << ": " << omega);
         _option.sor_omega = omega;
     }
 
     void set_max_iter(uint_t iter)
     {
-        LOG1(__FUNCTION__ << ": " << iter);
         _option.max_interation = iter;
     }
 
     void set_precision(double prec)
     {
-        LOG1(__FUNCTION__ << ": " << prec);
         _option.precision = prec;
     }
 
     void set_halt_condition(std::function<bool(PetriNetContext *)> func)
     {
-        LOG1(__FUNCTION__);
         petri_net.set_halt_condition(func);
     }
 
     uint_t add_inst_reward_func(RewardFuncType reward_func)
     {
-        LOG1(__FUNCTION__);
         inst_reward_func.push_back(reward_func);
         inst_reward.push_back(0.0);
         return inst_reward_func.size() - 1;
@@ -131,7 +116,6 @@ public:
 
     uint_t add_cum_reward_func(RewardFuncType reward_func)
     {
-        LOG1(__FUNCTION__);
         cum_reward_func.push_back(reward_func);
         cum_reward.push_back(0.0);
         return cum_reward_func.size() - 1;
@@ -140,13 +124,11 @@ public:
 
     double get_inst_reward(uint_t reward_index)
     {
-        LOG1(__FUNCTION__);
         return inst_reward[reward_index];
     }
 
     double get_cum_reward(uint_t reward_index)
     {
-        LOG1(__FUNCTION__);
         return cum_reward[reward_index];
     }
 

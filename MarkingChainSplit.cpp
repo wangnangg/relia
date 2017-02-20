@@ -37,10 +37,10 @@ void recursive_visit(const MarkingChain<SubchainElement> &chain,
         if(w.index == 0)
         {
             recursive_visit(chain, vertex_info, dest_ind, visit_index, scc_stack, subchain_list);
-            v.lowlink = std::min(v.lowlink, w.lowlink);
+            v.lowlink = (std::min)(v.lowlink, w.lowlink);
         } else if (w.onstack)
         {
-            v.lowlink = std::min(v.lowlink, w.index);
+            v.lowlink = (std::min)(v.lowlink, w.index);
         }
     }
 

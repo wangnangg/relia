@@ -1,18 +1,18 @@
 #include "MarkingChain.h"
 #include "MarkingChainSplit.h"
 #include "helper.h"
-#include "logger.h"
 #include <limits>
-
-ColSparseM subchain_to_Pmatrix(const Subchain &subchain, ChainIndexMapper *mapper)
+#include <cassert>
+ColSparseM subchain_to_Pmatrix(const Subchain &subchain)
 {
 	uint_t dim = subchain.home_element_count() + subchain.foreign_element_count();
 	ColSparseM Pmat(dim);
+	double max_q = -1;
 	for (uint_t i = 0; i < subchain.home_element_count(); i++)
 	{
 		auto ele_ptr = subchain[i];
-		uint_t mat_ind = mapper == nullptr ? i : mapper->from_chain(i);
-		Pmat.alloc_major(mat_ind, ele_ptr->get_out_degree());
+		uint_t mat_ind = i;
+		Pmat.alloc_major(mat_ind, ele_ptr->get_out_degree() + 1);
 		for (auto arc : ele_ptr->get_to_arc_list())
 		{
 			if (arc.val != 0.0)
@@ -21,35 +21,58 @@ ColSparseM subchain_to_Pmatrix(const Subchain &subchain, ChainIndexMapper *mappe
 				uint_t dest_mat_ind;
 				if (subchain.owns(dest_ptr))
 				{
-					dest_mat_ind = mapper == nullptr ?
-						dest_ptr->get_subindex() : mapper->from_chain(dest_ptr->get_subindex());
+					dest_mat_ind = dest_ptr->get_subindex();
 				}
 				else
 				{
 					dest_mat_ind = subchain.find_foreign_element_index(dest_ptr);
 				}
-				Pmat.add_entry(mat_ind, dest_mat_ind, arc.val / ele_ptr->get_out_sum());
+				Pmat.add_entry(mat_ind, dest_mat_ind, arc.val);
 			}
 		}
-		Pmat.assemble(mat_ind);
+		double diag_entry = -ele_ptr->get_out_sum();
+		if (-diag_entry > max_q)
+		{
+			max_q = -diag_entry;
+		}
+		Pmat.add_entry(mat_ind, mat_ind, diag_entry);
 	}
-	for (uint_t i = subchain.home_element_count(); i < dim; i++)
-	{
-		Pmat.alloc_major(i, 1);
-		Pmat.add_entry(i, i, 1.0);
-	}
+	unif_Qmatrix(Pmat, max_q);
 	return Pmat;
 }
 
+Vector chain_init_to_vector(const MarkingChainSparseState& init_state, uint_t dim)
+{
+	Vector v(dim);
+	for (auto s : init_state)
+	{
+		auto ele_ptr = (BasicChainElement*)s.ele;
+		v(ele_ptr->get_index()) = s.prob;
+	}
+	return v;
+}
 
-ColSparseM subchain_to_Qmatrix(const Subchain &subchain, ChainIndexMapper *mapper)
+void unif_Qmatrix(ColSparseM& Q, double unif_rate)
+{
+	if(unif_rate > 0)
+	{
+		Q.scale(1.0 / unif_rate);
+	}
+	for (uint_t i = 0; i < Q.dim(); i++)
+	{
+		Q.add_entry(i, i, 1.0);
+		Q.assemble(i);
+	}
+}
+
+ColSparseM subchain_to_Qmatrix(const Subchain &subchain)
 {
 	uint_t dim = subchain.home_element_count();
 	ColSparseM Qmat(dim);
 	for (uint_t i = 0; i < dim; i++)
 	{
 		auto ele_ptr = subchain[i];
-		uint_t mat_ind = mapper == nullptr ? i : mapper->from_chain(i);
+		uint_t mat_ind = i;
 		Qmat.alloc_major(mat_ind, ele_ptr->get_out_degree() + 1);
 		for (auto arc : ele_ptr->get_to_arc_list())
 		{
@@ -58,8 +81,7 @@ ColSparseM subchain_to_Qmatrix(const Subchain &subchain, ChainIndexMapper *mappe
 				auto dest_ptr = static_cast<SubchainElement *>(arc.dest_ele);
 				if (subchain.owns(dest_ptr))
 				{
-					uint_t dest_mat_ind = mapper == nullptr ?
-						dest_ptr->get_subindex() : mapper->from_chain(dest_ptr->get_subindex());
+					uint_t dest_mat_ind = dest_ptr->get_subindex();
 					Qmat.add_entry(mat_ind, dest_mat_ind, arc.val);
 				}
 			}
@@ -102,3 +124,4 @@ Subchain::Subchain(uint_t index, const MarkingChain<SubchainElement> &chain, con
 		}
 	}
 }
+

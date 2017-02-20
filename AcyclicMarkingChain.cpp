@@ -100,6 +100,7 @@ void generate_next_level_chain(const PetriNet &petri_net, const MarkingChain<Acy
 
 double compute_acyclic_mtta(const PetriNet &petri_net, const IterStopCondition van_chain_stop_condition)
 {
+	LOG(TRACE) << "Compute MTTA for acyclic petri net starts";
     MarkingChain<AcyclicChainElement> current_level;
     MarkingChain<AcyclicChainElement> next_level;
     std::vector<const MarkingChain<AcyclicChainElement> *> chain_list{&current_level};
@@ -129,5 +130,6 @@ double compute_acyclic_mtta(const PetriNet &petri_net, const IterStopCondition v
         tau += eval_level_tau(current_level, eval_order);
         std::swap(current_level, next_level);
     } while (current_level.size() != 0);
+	LOG(TRACE) << "Compute MTTA for acyclic petri net ends";
     return tau;
 }

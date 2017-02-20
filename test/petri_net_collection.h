@@ -28,7 +28,7 @@ PetriNet acyclic_trivial_petri_net();
 PetriNet acyclic_petri_net();
 
 
-PetriNet securityCPS_petri_net();
+PetriNet securityCPS_petri_net(uint_t num_nodes=20, uint_t m=4);
 
 
 PetriNet mixed_class_petri_net();

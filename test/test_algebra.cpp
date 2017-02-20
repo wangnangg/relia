@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "Algebra.h"
+#include "MatrixSolve.h"
 #include "helper.h"
 
 TEST(Algebra, power_method)
@@ -48,3 +48,4 @@ TEST(Algebra, sor_method)
     std::cout << "used iteration:" << stop_condtion.get_used_iter() << std::endl;
     ASSERT_TRUE(stop_condtion.is_precision_reached());
 }
+

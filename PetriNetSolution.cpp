@@ -4,7 +4,7 @@
 
 #include "PetriNetSolution.h"
 #include "MarkingChainSolve.h"
-LOG_INIT;
+#include "easylogging++.h"
 
 template <typename ElementType>
 std::vector<MarkingVal> translate_solution(MarkingChain<ElementType> chain, const SSChainSolution& sol)
@@ -19,6 +19,7 @@ std::vector<MarkingVal> translate_solution(MarkingChain<ElementType> chain, cons
 }
 std::vector<MarkingVal> solve_ss_divide(const PetriNet &petri_net, const IterStopCondition &stop_condition)
 {
+	LOG(TRACE) << "Solve using divide method";
 	auto generate_result = generate_marking_chain<SubchainElement>(petri_net, stop_condition);
     auto& chain  = generate_result.first;
     auto& chain_init = generate_result.second;
@@ -28,7 +29,7 @@ std::vector<MarkingVal> solve_ss_divide(const PetriNet &petri_net, const IterSto
 
 void PetriNetSolution::solve_steady_state()
 {
-	LOG1(__FUNCTION__);
+	LOG(TRACE) << "solving steady state starts";
 	petri_net.finalize();
 	IterStopCondition stop_condition(option.max_interation, option.precision, option.check_interval);
 	std::vector<MarkingVal> result;
@@ -36,15 +37,19 @@ void PetriNetSolution::solve_steady_state()
 	{
 	case Option::SS_Power:
 		result = solve_ss_power(petri_net, stop_condition);
+		break;
 	case Option::SS_SOR:
 		result = solve_ss_sor(petri_net, stop_condition, option.sor_omega);
+		break;
 	case Option::SS_Divide:
 		result = solve_ss_divide(petri_net, stop_condition);
+		break;
 	default:
 		result = solve_ss_auto(petri_net, stop_condition);
 		break;
 	}
 	update_reward(result);
+	LOG(TRACE) << "solving steady state ends";
 }
 
 void PetriNetSolution::update_reward(const std::vector<MarkingVal>& result)
@@ -71,6 +76,7 @@ void PetriNetSolution::update_reward(const std::vector<MarkingVal>& result)
 
 std::vector<MarkingVal> solve_ss_power(const PetriNet &petri_net, const IterStopCondition &stop_condition)
 {
+	LOG(TRACE) << "Solve using power method";
 //    auto generate_result = generate_marking_chain<BasicChainElement>(petri_net, stop_condition);
 //    auto &chain = generate_result.first;
 //    auto &chain_init = generate_result.second;
@@ -80,7 +86,23 @@ std::vector<MarkingVal> solve_ss_power(const PetriNet &petri_net, const IterStop
 
 std::vector<MarkingVal> solve_ss_sor(const PetriNet &petri_net, const IterStopCondition &stop_condition, double omega)
 {
-    return std::vector<MarkingVal>();
+	LOG(TRACE) << "Solve using SOR method";
+	auto generate_result = generate_marking_chain<BasicChainElement>(petri_net, stop_condition);
+    auto &chain = generate_result.first;
+    auto &chain_init = generate_result.second;
+	auto Qmat = markingchain_to_Qmatrix(chain);
+	auto Qmat_row = to_row_sparse(Qmat);
+	SSChainSolution solution(Qmat_row.dim());
+	solution.prob.fill(1.0);
+	IterStopCondition cond1(stop_condition);
+	sor_method(solution.prob, Qmat_row, cond1, 1.0);
+	solution.prob.scale(1.0 / norm1(solution.prob));
+	auto b = chain_init_to_vector(chain_init, Qmat_row.dim());
+	IterStopCondition cond2(stop_condition);
+	solution.stay_time.fill(1.0);
+	sor_method(solution.stay_time, Qmat_row, -1.0, std::move(b), cond2, 1.0);
+
+	return translate_solution(std::move(chain), solution);
 }
 
 
