@@ -19,7 +19,6 @@ std::vector<MarkingVal> translate_solution(MarkingChain<ElementType> chain, cons
 }
 std::vector<MarkingVal> solve_ss_divide(const PetriNet &petri_net, const IterStopCondition &stop_condition)
 {
-	LOG(TRACE) << "Solve using divide method";
 	auto generate_result = generate_marking_chain<SubchainElement>(petri_net, stop_condition);
     auto& chain  = generate_result.first;
     auto& chain_init = generate_result.second;
@@ -29,7 +28,6 @@ std::vector<MarkingVal> solve_ss_divide(const PetriNet &petri_net, const IterSto
 
 void PetriNetSolution::solve_steady_state()
 {
-	LOG(TRACE) << "solving steady state starts";
 	petri_net.finalize();
 	IterStopCondition stop_condition(option.max_interation, option.precision, option.check_interval);
 	std::vector<MarkingVal> result;
@@ -49,7 +47,6 @@ void PetriNetSolution::solve_steady_state()
 		break;
 	}
 	update_reward(result);
-	LOG(TRACE) << "solving steady state ends";
 }
 
 void PetriNetSolution::update_reward(const std::vector<MarkingVal>& result)
@@ -76,7 +73,12 @@ void PetriNetSolution::update_reward(const std::vector<MarkingVal>& result)
 
 std::vector<MarkingVal> solve_ss_power(const PetriNet &petri_net, const IterStopCondition &stop_condition)
 {
-	LOG(TRACE) << "Solve using power method";
+	auto generate_result = generate_marking_chain<BasicChainElement>(petri_net, stop_condition);
+    auto &chain = generate_result.first;
+    auto &chain_init = generate_result.second;
+	auto Pmat = markingchain_to_Qmatrix(chain);
+	unif_Qmatrix(Pmat, max_out_rate_sum(chain) * 1.1);
+
 //    auto generate_result = generate_marking_chain<BasicChainElement>(petri_net, stop_condition);
 //    auto &chain = generate_result.first;
 //    auto &chain_init = generate_result.second;
@@ -86,7 +88,6 @@ std::vector<MarkingVal> solve_ss_power(const PetriNet &petri_net, const IterStop
 
 std::vector<MarkingVal> solve_ss_sor(const PetriNet &petri_net, const IterStopCondition &stop_condition, double omega)
 {
-	LOG(TRACE) << "Solve using SOR method";
 	auto generate_result = generate_marking_chain<BasicChainElement>(petri_net, stop_condition);
     auto &chain = generate_result.first;
     auto &chain_init = generate_result.second;

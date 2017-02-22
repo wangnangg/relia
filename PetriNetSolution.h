@@ -107,6 +107,12 @@ public:
         petri_net.set_halt_condition(func);
     }
 
+    void config_logger(const char* filename)
+    {
+        el::Configurations conf(filename);
+        el::Loggers::reconfigureAllLoggers(conf);
+    }
+
     uint_t add_inst_reward_func(RewardFuncType reward_func)
     {
         inst_reward_func.push_back(reward_func);

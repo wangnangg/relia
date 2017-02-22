@@ -89,7 +89,6 @@ public:
 
 };
 
-
 class Marking
 {
 public:
@@ -100,7 +99,6 @@ public:
         Tangible,
         Absorbing
     };
-
 private:
     Marking(const Marking &marking) = default;
 public:

@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <vector>
 #include "Poisson.h"
+#include "Type.h"
+
 using std::exp;
 using std::floor;
 using std::max;
@@ -38,7 +40,7 @@ int FoxFindRTP(double lambda, double epsilon, int m, double &k_r)
 
 static double TAU = 1e-60;
 static double OMEGA = 1e60;
-void fox_find_trunc_point(double lambda, int &Ltp, int &Rtp, double epsilon, bool &overflowed)
+void fox_find_trunc_point(double lambda, uint_t &Ltp, uint_t &Rtp, double epsilon, bool &overflowed)
 {
 	/************************************************************************
 	finds the left truncation point and calls the routine foc_find_r to
@@ -55,7 +57,7 @@ void fox_find_trunc_point(double lambda, int &Ltp, int &Rtp, double epsilon, boo
 
 	double k;
 	double k_r;
-	int L, R;
+	uint_t L, R;
 	double b_lambda;
 	double c_m;
 	double k_hat;

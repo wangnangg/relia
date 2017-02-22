@@ -2,7 +2,7 @@
 
 #include "Type.h"
 #include <vector>
-
+#include <cmath>
 class Vector
 {
 	std::vector<double> data;

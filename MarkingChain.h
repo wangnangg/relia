@@ -504,7 +504,7 @@ template<typename ElementType>
 std::pair<MarkingChain<ElementType>, MarkingChainSparseState> generate_marking_chain(const PetriNet &petri_net,
 	const IterStopCondition van_chain_stop_condition)
 {
-	LOG(TRACE) << "Markov chain generation starts";
+    TIMED_SCOPE(funcTimer, "Reachability graph generation");
 	MarkingChain<ElementType> tan_container_chain;
 	MarkingChainSparseState init_state;
 	std::vector<const MarkingChain<ElementType> *> chain_list{ &tan_container_chain };
@@ -529,7 +529,7 @@ std::pair<MarkingChain<ElementType>, MarkingChainSparseState> generate_marking_c
 		explore_tangible_marking(petri_net, chain_list, tan_container_chain, tan_container_chain[current_index],
 			van_chain_stop_condition);
 	}
-	LOG(TRACE) << "Markov chain generation ends";
+	LOG(INFO) << tan_container_chain.size() << " tangible markings generated.";
 	return std::make_pair<MarkingChain<ElementType>, MarkingChainSparseState>(std::move(tan_container_chain),
 		std::move(init_state));
 }

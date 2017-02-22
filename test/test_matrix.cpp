@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "Matrix.h"
 #include "helper.h"
-
+#include <cmath>
 bool equal(const Vector &v0, const Vector &v1, double error = 0.0001)
 {
     for (uint_t i = 0; i < v0.dim(); i++)

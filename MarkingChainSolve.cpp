@@ -20,6 +20,19 @@ SSTangibleSubchainSolution ss_solve_tangible_subchain(const Subchain &subchain,
 	const IterStopCondition& stop_condition)
 {
 	SSTangibleSubchainSolution solution(subchain.home_element_count());
+    if(subchain.home_element_count() == 1)
+    {
+        SubchainElement* home_ele = subchain[0];
+        double init_prob = subchain_init(0);
+        solution.prob.reserve(subchain.foreign_element_count());
+        for(auto arc : home_ele->get_to_arc_list())
+        {
+            SubchainElement* ele_ptr = (SubchainElement*)arc.dest_ele;
+            solution.prob.emplace_back(ele_ptr, arc.val / home_ele->get_out_sum() * init_prob);
+        }
+        solution.stay_time(0) = init_prob / home_ele->get_out_sum();
+        return solution;
+    }
 	auto Pmat = subchain_to_Pmatrix(subchain);
 	Vector prob_sol(Pmat.dim());
 	double prob_sum = norm1(subchain_init);
@@ -55,6 +68,10 @@ Vector ss_solve_absorbing_subchain(const Subchain &subchain,
 	double prob_sum,
 	IterStopCondition &stop_condition)
 {
+    if(subchain.home_element_count() == 1)
+    {
+        return Vector(1, prob_sum);
+    }
 	auto Qmat = subchain_to_Qmatrix(subchain);
 	auto Qmat_row = to_row_sparse(Qmat);
 	Vector sol(Qmat.dim(), 1.0);
@@ -84,6 +101,7 @@ SSChainSolution ss_divide_solve_marking_chain(const MarkingChain<SubchainElement
 	const std::vector<ElementProb> &chain_init_vec,
 	const IterStopCondition& stop_condition)
 {
+	TIMED_SCOPE(funcTimer, "Divide method");
 	SSChainSolution solution(chain.size());
 	std::vector<uint_t> start_ind;
 	start_ind.reserve(chain_init_vec.size());
@@ -112,9 +130,7 @@ SSChainSolution ss_divide_solve_marking_chain(const MarkingChain<SubchainElement
 		if (subchain.is_absorbing())
 		{
 			IterStopCondition stop_condition_inst = stop_condition;
-			Vector sub_sol = subchain.home_element_count() == 1 ?
-				std::move(init_vec) :
-				ss_solve_absorbing_subchain(subchain, norm1(init_vec), stop_condition_inst);
+			Vector sub_sol = ss_solve_absorbing_subchain(subchain, norm1(init_vec), stop_condition_inst);
 			for (uint_t local_ind = 0; local_ind < subchain.home_element_count(); local_ind++)
 			{
 				uint_t global_index = subchain[local_ind]->get_index();

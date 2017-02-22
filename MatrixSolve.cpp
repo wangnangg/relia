@@ -6,7 +6,7 @@
 
 void sor_method(Vector &x, const RowSparseM &Q, IterStopCondition &stop_condition, double omega)
 {
-	LOG(TRACE) << "SOR1 starts";
+    TIMED_SCOPE(funcTimer, "SOR Ax=0");
 	uint_t dim = Q.dim();
 	RowSparseM L(dim), U(dim), D(dim);
 	split_lud(L, U, D, Q);
@@ -31,11 +31,10 @@ void sor_method(Vector &x, const RowSparseM &Q, IterStopCondition &stop_conditio
 	{
 		LOG(WARNING) << "Precisoin not reached." << " Target: " << stop_condition.get_target_precision() << " Reached: " << stop_condition.get_reached_precision();
 	}
-	LOG(TRACE) << "SOR1 ends";
 }
 void sor_method(Vector &x, const RowSparseM &Q, double alpha, Vector b, IterStopCondition &stop_condition, double omega)
 {
-	LOG(TRACE) << "SOR2 starts";
+    TIMED_SCOPE(funcTimer, "SOR Ax=b");
 	uint_t dim = Q.dim();
 	RowSparseM L(dim), U(dim), D(dim);
 	split_lud(L, U, D, Q);
@@ -61,7 +60,6 @@ void sor_method(Vector &x, const RowSparseM &Q, double alpha, Vector b, IterStop
 	{
 		LOG(WARNING) << "Precisoin not reached." << " Target: " << stop_condition.get_target_precision() << " Reached: " << stop_condition.get_reached_precision();
 	}
-	LOG(TRACE) << "SOR2 ends";
 }
 
 void transient_prob_unif(Vector& x, Vector v0, const ColSparseM& P, double unif_rate, double t, double precision, bool& overflowed)
@@ -75,7 +73,7 @@ void transient_prob_unif(Vector& x, Vector v0, const ColSparseM& P, double unif_
 	uint_t ss_check_interval = 50;
 	Vector v1(v0.dim());
 
-	int left_p, right_p;
+	uint_t left_p, right_p;
 	bool result;
 	fox_find_trunc_point(unif_rate * t, left_p, right_p, precision, result);
 	overflowed = result;

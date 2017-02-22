@@ -2,6 +2,7 @@
 #include <tuple>
 #include <algorithm>
 #include "helper.h"
+#include <cmath>
 
 void SparseMatrix::assemble(uint_t i)
 {

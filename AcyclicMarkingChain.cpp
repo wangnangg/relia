@@ -100,7 +100,7 @@ void generate_next_level_chain(const PetriNet &petri_net, const MarkingChain<Acy
 
 double compute_acyclic_mtta(const PetriNet &petri_net, const IterStopCondition van_chain_stop_condition)
 {
-	LOG(TRACE) << "Compute MTTA for acyclic petri net starts";
+    TIMED_SCOPE(funcTimer, "Acyclic MTTA");
     MarkingChain<AcyclicChainElement> current_level;
     MarkingChain<AcyclicChainElement> next_level;
     std::vector<const MarkingChain<AcyclicChainElement> *> chain_list{&current_level};
@@ -121,15 +121,23 @@ double compute_acyclic_mtta(const PetriNet &petri_net, const IterStopCondition v
         current_level[0]->accu_tau(1.0);
     }
 
+    uint_t total_count = 0;
+    uint_t max_level_count = 0;
     double tau = 0;
     do
     {
+        total_count += current_level.size();
+        if(current_level.size() + next_level.size() > max_level_count)
+        {
+            max_level_count = current_level.size() + next_level.size();
+        }
         next_level.clear();
         generate_next_level_chain(petri_net, current_level, van_chain_stop_condition, next_level);
         auto eval_order = topology_sort(current_level);
         tau += eval_level_tau(current_level, eval_order);
         std::swap(current_level, next_level);
     } while (current_level.size() != 0);
-	LOG(TRACE) << "Compute MTTA for acyclic petri net ends";
+    LOG(INFO) << total_count << " markings generated.";
+    LOG(INFO) << "Max number of markings in memory: " << max_level_count;
     return tau;
 }

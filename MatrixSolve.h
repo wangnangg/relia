@@ -3,6 +3,7 @@
 #include "Matrix.h"
 #include "helper.h"
 #include "Poisson.h"
+#include <cmath>
 class IterStopCondition
 {
 	const uint_t max_iteration;
