@@ -14,7 +14,7 @@ set(SOURCE_FILES
         test_marking_chain.cpp
         test_matrix.cpp
         test_solution.cpp
-        main.cpp)
+        main.cpp test_export.cpp)
 
 add_executable(unit_test ${SOURCE_FILES})
 target_link_libraries(unit_test relia gtest)

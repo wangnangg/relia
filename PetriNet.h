@@ -120,6 +120,21 @@ public:
     bool operator==(const Marking &other) const
     { return other.token_list == token_list; };
 
+    uint_t& operator[](uint_t i)
+    {
+        return token_list[i];
+    }
+
+    uint_t operator[](uint_t i) const
+    {
+        return token_list[i];
+    }
+
+    uint_t size() const
+    {
+        return token_list.size();
+    }
+
     Marking clone() const
     {
 		return Marking(*this);
@@ -176,7 +191,6 @@ class PetriNet
     std::function<bool(PetriNetContext*)> halt_func;
     std::vector<uint_t> trans_index_map;
 public:
-    typedef std::function<double(PetriNetContext *)> RewardFuncType;
     Marking init_marking;
     std::vector<Transition> trans_list;
     uint_t imme_trans_count;
@@ -217,11 +231,30 @@ public:
 
     //query method
 
-    bool is_transition_enabled(uint_t trans_index, PetriNetContext *context) const
+    Marking fire_transition(uint_t index, const Marking& m) const
     {
-        return trans_list[trans_index_map[trans_index]].is_enabled(context);
+        auto& t = get_transition(index);
+        PetriNetContext context = {this, &m};
+        auto pair = t.fire(&context);
+        return std::move(pair.first);
     }
 
+    const Transition& get_transition(uint_t index) const
+    {
+        return trans_list[trans_index_map[index]];
+    }
+
+    bool is_transition_enabled(uint_t trans_index, PetriNetContext *context) const
+    {
+        auto& t = get_transition(trans_index);
+        return t.is_enabled(context);
+    }
+    bool is_transition_enabled(uint_t trans_index, const Marking& m) const
+    {
+        auto& t = get_transition(trans_index);
+        PetriNetContext context = {this, &m};
+        return t.is_enabled(&context);
+    }
     uint_t get_token_num(uint_t place_index, PetriNetContext *context) const
     {
         return context->marking->token_list[place_index];

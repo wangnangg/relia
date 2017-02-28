@@ -4,6 +4,8 @@
 #include "PetriNet.h"
 #include "MarkingChain.h"
 #include "Matrix.h"
+#include "AcyclicMarkingChain.h"
+#include "easylogging++.h"
 
 struct Option
 {
@@ -75,8 +77,14 @@ public:
         _option.precision = 1e-6;
         _option.sor_omega = 1.0;
         _option.check_interval = 10;
+        el::Configurations defaultConf;
+        defaultConf.setToDefault();
+        defaultConf.setGlobally(
+                el::ConfigurationType::Enabled, "false");
+        el::Loggers::reconfigureAllLoggers(defaultConf);
     }
-        //option
+
+    //option
     void set_ss_method(Option::SSMethod method)
     {
         _option.steady_state_method = method;
@@ -107,7 +115,7 @@ public:
         petri_net.set_halt_condition(func);
     }
 
-    void config_logger(const char* filename)
+    void config_logger(const char *filename)
     {
         el::Configurations conf(filename);
         el::Loggers::reconfigureAllLoggers(conf);
@@ -147,6 +155,12 @@ public:
         IterStopCondition stop_condition(option.max_interation, option.precision, option.check_interval);
         auto chain_pair = generate_marking_chain<T>(petri_net, stop_condition);
         return chain_pair;
+    }
+
+    double get_acyclic_mtta()
+    {
+        IterStopCondition stop_condition(option.max_interation, option.precision, option.check_interval);
+        return compute_acyclic_mtta(petri_net, stop_condition);
     }
 
 private:

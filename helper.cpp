@@ -1,7 +1,6 @@
 #include "helper.h"
 #include "easylogging++.h"
 
-INITIALIZE_EASYLOGGINGPP
 template<>
 RowSparseM create_matrix<RowSparseM>(uint_t dim, std::vector<double> val)
 {

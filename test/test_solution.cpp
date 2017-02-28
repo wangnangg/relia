@@ -45,7 +45,7 @@ TEST(Solution, CPS)
 {
 	PetriNetSolution solution;
     uint_t mtta_index = solution.add_cum_reward_func(mtta_func);
-	uint_t n= 1000;
+	uint_t n= 100;
     uint_t m = n / 4;
     LOG(INFO) << "number of nodes: " << n;
 	solution.petri_net = securityCPS_petri_net(n, m);

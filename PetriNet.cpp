@@ -52,6 +52,7 @@ uint_t PetriNet::add_transition(TransType type, ConstOrVar<bool> guard, ConstOrV
     }
     uint_t index = trans_list.size();
     trans_list.push_back(Transition(index, type, guard, param, priority));
+    trans_index_map.push_back(index);
     return index;
 }
 
