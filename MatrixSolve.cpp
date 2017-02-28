@@ -73,7 +73,7 @@ void transient_prob_unif(Vector& x, Vector v0, const ColSparseM& P, double unif_
 	uint_t ss_check_interval = 50;
 	Vector v1(v0.dim());
 
-	uint_t left_p, right_p;
+	int_t left_p, right_p;
 	bool result;
 	fox_find_trunc_point(unif_rate * t, left_p, right_p, precision, result);
 	overflowed = result;
@@ -86,7 +86,7 @@ void transient_prob_unif(Vector& x, Vector v0, const ColSparseM& P, double unif_
 	uint_t iter_counter = 0;
 	bool ss_reached = false;
 	x.fill(0);
-	for (uint_t k = 0; k < left_p; k++)
+	for (int_t k = 0; k < left_p; k++)
 	{
 		matvec(v1, 1.0, P, v0);
 		std::swap(v1, v0);
@@ -105,7 +105,7 @@ void transient_prob_unif(Vector& x, Vector v0, const ColSparseM& P, double unif_
 	double summed_term = 0;
 	if (!ss_reached)
 	{
-		for (uint_t k = left_p; k <= right_p; k++)
+		for (int_t k = left_p; k <= right_p; k++)
 		{
 			double p_term = weight[k - left_p] / weight_sum;
 			summed_term += p_term;

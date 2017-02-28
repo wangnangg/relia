@@ -187,9 +187,10 @@ public:
 
 class PetriNet
 {
-    bool finalized = false;
     std::function<bool(PetriNetContext*)> halt_func;
     std::vector<uint_t> trans_index_map;
+    uint_t last_change_time = 0;
+    uint_t last_finalize_time = 0;
 public:
     Marking init_marking;
     std::vector<Transition> trans_list;
@@ -216,6 +217,7 @@ public:
 
     void set_halt_condition(std::function<bool(PetriNetContext*)> func)
     {
+        last_change_time += 1;
         halt_func = func;
     }
 
@@ -230,6 +232,11 @@ public:
     }
 
     //query method
+
+    uint_t get_last_change_time() const
+    {
+        return last_change_time;
+    }
 
     Marking fire_transition(uint_t index, const Marking& m) const
     {
@@ -246,13 +253,21 @@ public:
 
     bool is_transition_enabled(uint_t trans_index, PetriNetContext *context) const
     {
+        if(halt_func && halt_func(context))
+        {
+            return false;
+        }
         auto& t = get_transition(trans_index);
         return t.is_enabled(context);
     }
     bool is_transition_enabled(uint_t trans_index, const Marking& m) const
     {
-        auto& t = get_transition(trans_index);
         PetriNetContext context = {this, &m};
+        if(halt_func && halt_func(&context))
+        {
+            return false;
+        }
+        auto& t = get_transition(trans_index);
         return t.is_enabled(&context);
     }
     uint_t get_token_num(uint_t place_index, PetriNetContext *context) const

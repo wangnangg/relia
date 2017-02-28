@@ -71,6 +71,30 @@ void PetriNetSolution::update_reward(const std::vector<MarkingVal>& result)
 	}
 }
 
+void PetriNetSolution::solve_transient_state(double time)
+{
+    petri_net.finalize();
+    IterStopCondition stop_condition(option.max_interation, option.precision, option.check_interval);
+    std::vector<MarkingVal> result;
+    auto chain_pair = generate_marking_chain<SubchainElement>(petri_net, stop_condition);
+    auto& chain = chain_pair.first;
+    auto& chain_init = chain_pair.second;
+    auto Q = markingchain_to_Qmatrix(chain);
+    double unif_rate = max_out_rate_sum(chain);
+    unif_Qmatrix(Q, unif_rate);
+    SSChainSolution sol(Q.dim());
+    auto init_vec = chain_init_to_vector(chain_init, chain.size());
+    bool overflowed;
+    transient_prob_unif(sol.prob, Vector(init_vec), Q, unif_rate, time, option.precision, overflowed);
+    if(overflowed)
+    {
+        LOG(WARNING) << "unification overflowed.";
+    }
+    transient_cum_unif(sol.stay_time, Vector(init_vec), Q, unif_rate, time, option.precision);
+    auto solution = translate_solution(std::move(chain), sol);
+    update_reward(solution);
+}
+
 std::vector<MarkingVal> solve_ss_power(const PetriNet &petri_net, const IterStopCondition &stop_condition)
 {
 	auto generate_result = generate_marking_chain<BasicChainElement>(petri_net, stop_condition);

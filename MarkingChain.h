@@ -134,6 +134,7 @@ public:
 	MarkingChain(const MarkingChain &) = delete;
 
 	MarkingChain &operator=(MarkingChain &&) = default;
+	MarkingChain &operator=(const MarkingChain &) = delete;
 
 	ElementType *operator[](uint_t index) const
 	{

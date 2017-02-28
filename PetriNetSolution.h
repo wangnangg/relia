@@ -6,7 +6,6 @@
 #include "Matrix.h"
 #include "AcyclicMarkingChain.h"
 #include "easylogging++.h"
-
 struct Option
 {
     enum SSMethod
@@ -65,6 +64,9 @@ private:
     std::vector<RewardFuncType> cum_reward_func;
     Option _option;
     const Option &option;
+    std::map<std::string, uint_t> chain_generate_time;
+    std::pair<MarkingChain<SubchainElement>, MarkingChainSparseState> mkchain_subchain;
+    std::pair<MarkingChain<BasicChainElement>, MarkingChainSparseState> mkchain_basic;
 public:
     PetriNet petri_net;
     void *tag;
@@ -82,7 +84,30 @@ public:
         defaultConf.setGlobally(
                 el::ConfigurationType::Enabled, "false");
         el::Loggers::reconfigureAllLoggers(defaultConf);
+        chain_generate_time["subchain"] = 0;
+        chain_generate_time["basic"] = 0;
     }
+
+    void update_chain(const std::string& name)
+    {
+        if(chain_generate_time[name] == petri_net.get_last_change_time())
+        {
+            return;
+        }
+        LOG(INFO) << "updating chain:" << name;
+        chain_generate_time[name] = petri_net.get_last_change_time();
+        IterStopCondition stop_condition(option.max_interation, option.precision, option.check_interval);
+        if(name == "subchain")
+        {
+            mkchain_subchain = generate_marking_chain<SubchainElement>(petri_net, stop_condition);
+        } else if (name == "basic")
+        {
+            mkchain_basic = generate_marking_chain<BasicChainElement>(petri_net, stop_condition);
+        }
+
+    }
+
+
 
     //option
     void set_ss_method(Option::SSMethod method)
@@ -121,8 +146,17 @@ public:
         el::Loggers::reconfigureAllLoggers(conf);
     }
 
+
+    template <typename ReturnType>
+    void check_callback_function(std::function<ReturnType(PetriNetContext *)> func)
+    {
+        PetriNetContext context = {&petri_net, &petri_net.init_marking};
+        func(&context);
+    }
+
     uint_t add_inst_reward_func(RewardFuncType reward_func)
     {
+        check_callback_function(reward_func);
         inst_reward_func.push_back(reward_func);
         inst_reward.push_back(0.0);
         return inst_reward_func.size() - 1;
@@ -130,6 +164,7 @@ public:
 
     uint_t add_cum_reward_func(RewardFuncType reward_func)
     {
+        check_callback_function(reward_func);
         cum_reward_func.push_back(reward_func);
         cum_reward.push_back(0.0);
         return cum_reward_func.size() - 1;
@@ -147,6 +182,8 @@ public:
     }
 
     void solve_steady_state();
+
+    void solve_transient_state(double time);
 
     template<typename T>
     std::pair<MarkingChain<T>, MarkingChainSparseState> gen_marking_chain()

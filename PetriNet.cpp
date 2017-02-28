@@ -45,7 +45,7 @@ std::pair<Marking, double> Transition::fire(PetriNetContext *context) const
 
 uint_t PetriNet::add_transition(TransType type, ConstOrVar<bool> guard, ConstOrVar<double> param, uint_t priority)
 {
-    finalized = false;
+    last_change_time += 1;
     if (type == TransType::Imme)
     {
         imme_trans_count += 1;
@@ -58,7 +58,7 @@ uint_t PetriNet::add_transition(TransType type, ConstOrVar<bool> guard, ConstOrV
 
 void PetriNet::add_arc(ArcType type, uint_t trans_index, uint_t place_index, ConstOrVar<uint_t> multi)
 {
-    finalized = false;
+    last_change_time += 1;
     Transition &trans = trans_list[trans_index];
     switch (type)
     {
@@ -80,7 +80,7 @@ void PetriNet::add_arc(ArcType type, uint_t trans_index, uint_t place_index, Con
 
 void PetriNet::set_init_token(uint_t place_index, uint_t token)
 {
-    finalized = false;
+    last_change_time += 1;
     if (place_index >= init_marking.token_list.size())
     {
         init_marking.token_list.resize(place_index + 1, 0);
@@ -91,7 +91,7 @@ void PetriNet::set_init_token(uint_t place_index, uint_t token)
 
 void PetriNet::finalize()
 {
-    if (finalized)
+    if (last_change_time == last_finalize_time)
     {
         return;
     }
@@ -117,12 +117,12 @@ void PetriNet::finalize()
     }
 
     set_marking_type(init_marking);
-    finalized = true;
+    last_finalize_time = last_change_time;
 }
 
 std::vector<std::pair<Marking, double>> PetriNet::next_markings(const Marking &marking) const
 {
-    if (!finalized)
+    if (last_change_time != last_finalize_time)
     {
         throw 0;
     }

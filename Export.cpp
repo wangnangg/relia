@@ -67,6 +67,7 @@ json transition2json(const Transition& t)
 
 json export_petri_net2json(const PetriNet &petri_net)
 {
+    LOG(INFO) << "export petri net";
     json j = json({});
 
     j["place_count"] = petri_net.place_count();
@@ -82,6 +83,7 @@ json export_petri_net2json(const PetriNet &petri_net)
 
 json export_marking2json(const Marking &mk)
 {
+    LOG(INFO) << "export marking";
     json j = json::array();
     for(uint_t n : mk.token_list)
     {
@@ -93,6 +95,7 @@ json export_marking2json(const Marking &mk)
 
 Marking import_marking_from_json(const json& j)
 {
+    LOG(INFO) << "import marking";
     Marking m(j.size());
     for(uint_t i=0; i<j.size(); i++)
     {

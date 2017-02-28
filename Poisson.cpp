@@ -5,6 +5,7 @@
 #include <vector>
 #include "Poisson.h"
 #include "Type.h"
+#include "easylogging++.h"
 
 using std::exp;
 using std::floor;
@@ -34,13 +35,14 @@ int FoxFindRTP(double lambda, double epsilon, int m, double &k_r)
 			break;
 		}
 	}
+
 	return R;
 
 }
 
 static double TAU = 1e-60;
 static double OMEGA = 1e60;
-void fox_find_trunc_point(double lambda, uint_t &Ltp, uint_t &Rtp, double epsilon, bool &overflowed)
+void fox_find_trunc_point(double lambda, int &Ltp, int &Rtp, double epsilon, bool &overflowed)
 {
 	/************************************************************************
 	finds the left truncation point and calls the routine foc_find_r to
@@ -57,7 +59,7 @@ void fox_find_trunc_point(double lambda, uint_t &Ltp, uint_t &Rtp, double epsilo
 
 	double k;
 	double k_r;
-	uint_t L, R;
+	int L, R;
 	double b_lambda;
 	double c_m;
 	double k_hat;
@@ -71,6 +73,7 @@ void fox_find_trunc_point(double lambda, uint_t &Ltp, uint_t &Rtp, double epsilo
 	if (lambda < 25.0)
 	{
 		Ltp = 0;
+        LOG(DEBUG) << "trunc point:" << Ltp << ", " << Rtp;
 		return;
 	}
 	b_lambda = (1.0 + 1.0 / lambda) * exp(1.0 / (8.0 * lambda));
@@ -84,7 +87,9 @@ void fox_find_trunc_point(double lambda, uint_t &Ltp, uint_t &Rtp, double epsilo
 	}
 	L = (int)floor(m - k * sqrt(lambda) - 1.5);
 	if (L < 0)
-		L = 0;
+    {
+        L = 0;
+    }
 	Ltp = L;
 	/*
 	*   The following code checks the lower bounds on the
@@ -98,6 +103,7 @@ void fox_find_trunc_point(double lambda, uint_t &Ltp, uint_t &Rtp, double epsilo
 		bound = c_m * exp(-(k_hat + 1) * (k_hat + 1) / 2.0);
 		if (OMEGA * bound / (1.0e10 * (R - L)) < TAU)
 		{
+            LOG(DEBUG) << "range too large (rate > 400):" << L << ", " << R;
 			overflowed = true;
 		}
 	} /* if (lambda >= 400.0) */
@@ -116,8 +122,11 @@ void fox_find_trunc_point(double lambda, uint_t &Ltp, uint_t &Rtp, double epsilo
 	}
 	if (bound != 0.0 && OMEGA * bound / (1.0e10 * (R - L)) < TAU)
 	{
+        LOG(DEBUG) << "range too large (rate < 400):" << L << ", " << R;
 		overflowed = true;
 	}
+
+	LOG(DEBUG) << "trunc point:" << Ltp << ", " << Rtp;
 }
 
 double fox_weight_sum(const std::vector<double>& weight)
@@ -188,6 +197,7 @@ std::vector<double> fox_term_weight(double lambda, int L, int R, double epsilon,
 		if (R > 600)
 		{
 			overflowed = true;
+            LOG(DEBUG) << "overflow because right point too large:" << R;
 		}
 		for (j = m; j < R; j++)
 		{
@@ -230,6 +240,8 @@ int find_cum_rtp(double lambda, double precision, double time)
 		sumqt += p_term;
 		right += 1;
 	} /* end while */
+
+	LOG(DEBUG) << "cum right trunc point:" << right;
 
 	return right;
 }
