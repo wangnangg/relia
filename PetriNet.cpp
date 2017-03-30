@@ -95,23 +95,9 @@ void PetriNet::finalize()
     {
         return;
     }
-    std::sort(trans_list.begin(), trans_list.end(),
-              [](const Transition &t1, const Transition &t2)
-              {
-                  if (t1.type == TransType::Imme && t2.type != TransType::Imme)
-                  {
-                      return true;
-                  } else if (t1.type != TransType::Imme && t2.type == TransType::Imme)
-                  {
-                      return false;
-                  } else
-                  {
-                      return t1.priority < t2.priority;
-                  }
-              }
-    );
+    std::sort(trans_list.begin(), trans_list.end(), trans_higher_prio);
     trans_index_map.resize(trans_list.size());
-    for(uint_t i=0; i<trans_list.size(); i++)
+    for (uint_t i = 0; i < trans_list.size(); i++)
     {
         trans_index_map[trans_list[i].index] = i;
     }
@@ -124,11 +110,11 @@ std::vector<std::pair<Marking, double>> PetriNet::next_markings(const Marking &m
 {
     if (last_change_time != last_finalize_time)
     {
-        throw 0;
+        throw Exception("Finalize first.");
     }
     std::vector<std::pair<Marking, double>> result;
     PetriNetContext context{this, &marking};
-    if(marking.type == Marking::Absorbing)
+    if (marking.type == Marking::Absorbing)
     {
         return result;
     }
@@ -154,7 +140,7 @@ std::vector<std::pair<Marking, double>> PetriNet::next_markings(const Marking &m
 void PetriNet::set_marking_type(Marking &marking) const
 {
     PetriNetContext context{this, &marking};
-    if(halt_func && halt_func(&context))
+    if (halt_func && halt_func(&context))
     {
         marking.type = Marking::Absorbing;
         return;
@@ -183,3 +169,27 @@ void PetriNet::set_marking_type(Marking &marking) const
     }
 }
 
+bool trans_higher_prio(const Transition &t1, const Transition &t2)
+{
+    if (t1.type == TransType::Imme)
+    {
+        if (t1.type == t2.type)
+        {
+            return t1.priority < t2.priority;
+        } else
+        {
+            return true;
+        }
+
+    } else
+    {
+        if (t2.type == TransType::Imme)
+        {
+            return false;
+        } else
+        {
+            return t1.priority < t2.priority;
+        }
+
+    }
+}
