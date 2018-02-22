@@ -330,6 +330,7 @@ public:
     }
 };
 
+
 template<typename ElementType>
 ElementType *search_element(const std::vector<const MarkingChain<ElementType> *> &chain_list, const Marking &mk)
 {
@@ -387,6 +388,7 @@ MarkingChain<ElementType> recursive_explore_vanishing_marking(const PetriNet &pe
         explore_vanishing_marking(petri_net, chain_list, tan_container_chain, van_container_chain,
                                   van_container_chain[current_index]);
     }
+    chain_list.pop_back();
     return van_container_chain;
 }
 

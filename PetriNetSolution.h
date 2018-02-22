@@ -150,6 +150,7 @@ public:
     template <typename ReturnType>
     void check_callback_function(std::function<ReturnType(PetriNetContext *)> func)
     {
+        return;
         PetriNetContext context = {&petri_net, &petri_net.init_marking};
         func(&context);
     }
@@ -198,6 +199,12 @@ public:
     {
         IterStopCondition stop_condition(option.max_interation, option.precision, option.check_interval);
         return compute_acyclic_mtta(petri_net, stop_condition);
+    }
+
+    void bind_marking_modifier(const std::function<Marking (PetriNetContext *)>& modifier)
+    {
+        LOG(INFO) << "binding modifier";
+        petri_net.bind_modifier(modifier);
     }
 
 private:

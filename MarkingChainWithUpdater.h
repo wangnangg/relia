@@ -1,0 +1,12 @@
+//
+// Created by wangnan on 17-3-30.
+//
+
+#ifndef RELIAPY_MARKINGCHAINWITHUPDATER_H
+#define RELIAPY_MARKINGCHAINWITHUPDATER_H
+
+#include "MarkingChain.h"
+
+
+
+#endif //RELIAPY_MARKINGCHAINWITHUPDATER_H

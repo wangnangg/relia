@@ -28,5 +28,5 @@ set(SOURCE_FILES
         easylogging++.cc easylogging++.h
         MatrixSolve.cpp MatrixSolve.h
         Poisson.cpp Poisson.h
-        json.hpp)
+        json.hpp MarkingChainWithUpdater.cpp MarkingChainWithUpdater.h)
 add_library(relia ${SOURCE_FILES})

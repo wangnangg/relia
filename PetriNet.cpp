@@ -130,8 +130,18 @@ std::vector<std::pair<Marking, double>> PetriNet::next_markings(const Marking &m
         if (t->is_enabled(&context))
         {
             auto pair = t->fire(&context);
-            set_marking_type(pair.first);
-            result.push_back(std::move(pair));
+            if (this->modifier_func)
+            {
+                //TODO: cache the result of modifier
+                PetriNetContext context {this, &pair.first};
+                auto mk = modifier_func(&context);
+                set_marking_type(mk);
+                result.push_back(std::make_pair(std::move(mk), pair.second));
+            } else
+            {
+                set_marking_type(pair.first);
+                result.push_back(std::move(pair));
+            }
         }
     }
     return result;
@@ -168,6 +178,7 @@ void PetriNet::set_marking_type(Marking &marking) const
         marking.type = Marking::Absorbing;
     }
 }
+
 
 bool trans_higher_prio(const Transition &t1, const Transition &t2)
 {
